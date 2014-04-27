@@ -230,7 +230,7 @@ modeNavigationString["uk"] = "Режим: навігація. Shift/прямок
 modeNavigationString["hu"] = "Mód: navigáció. Shift / téglalappal vagy egér görgővel lehet nagyítani.";
 modeNavigationString["ro"] =  "Mod: navigare. Shift+desenează un dreptunghi; folosește rotița mouse-ului pentru zoom.";
 modeNavigationString["ru"] =  "Режим:навигация. Shift+выделение прямоугольника или колесо мыши для изменения масштаба.";
-modeNavigationString["si"] =  "Način: navigacija. Miška (lev gumb premik, kolešček povečava), Tipkovnica (smerne tipke in +-), SHIFT+pravokotnik za povečavo.";
+modeNavigationString["si"] =  "Način: navigacija. Miška (lev gumb premik, kolešček povečava), Tipkovnica (smerne tipke in +-).";
 modeNavigationString["nl"] = "Mode: navigatie. Shift/rechthoek of muiswiel om te zoomen.";
 
 //mode string for rectangle zoom
@@ -1705,6 +1705,20 @@ tooltipLayerTreeLayerOutsideScale["ro"] = "Vizibil la scara";
 tooltipLayerTreeLayerOutsideScale["ru"] = "Visible at scales"; //FIXME
 tooltipLayerTreeLayerOutsideScale["si"] = "vidno pri merilih";
 tooltipLayerTreeLayerOutsideScale["nl"] = "Zichtbaar op schalen";
+
+//title in ClickPopup
+var clickPopupTitleString = new Array();
+clickPopupTitleString["en"] = "Results"; //FIXME
+clickPopupTitleString["es"] = "Results"; //FIXME
+clickPopupTitleString["de"] = "Results"; //FIXME
+clickPopupTitleString["fr"] = "Results"; //FIXME
+clickPopupTitleString["it"] = "Results"; //FIXME
+clickPopupTitleString["pt_PT"] = "Results"; //FIXME
+clickPopupTitleString["uk"] = "Results"; //FIXME
+clickPopupTitleString["hu"] = "Results"; //FIXME
+clickPopupTitleString["ro"] = "Results"; //FIXME
+clickPopupTitleString["ru"] = "Results"; //FIXME
+clickPopupTitleString["si"] = "Rezultati poizvedbe";
 
 /***********************
 Error Messages
