@@ -59,13 +59,18 @@ var layoutHeaderCfg = {
 		{
 			tag: 'div',
 			id: 'panel_header_title',
-			html: 'GIS-Browser'
+			html: ''
 		},
 		{
 			tag: 'div',
 			id: 'panel_header_terms_of_use',
 			html: '<a></a>'
-		}
+		},
+		{
+			tag: 'div',
+			id: 'panel_header_user',
+			html: '<a></a>'+GLOBAL_USER+'&nbsp;'
+		}		
 	]
 };
 if (headerLogoImg != null) {
@@ -129,7 +134,8 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 					tooltip: mapThemeButtonTooltipString[lang],
 					enableToggle: false,
 					allowDepress: false,
-					flex: 0.1
+					flex: 0.1,
+					hidden: true
 				}, {
 					xtype: 'panel',
 					layout: 'accordion',
@@ -292,16 +298,18 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 						}, {
 							xtype: 'tbseparator',
                             id: 'separator4'
-						}, {
-							xtype: 'button',
-							enableToggle: false,
-							allowDepress: false,
-							scale: 'medium',
-							icon: 'gis_icons/mActionHelp.png',
-							tooltipType: 'qtip',
-							tooltip: showHelpTooltipString[lang],
-							id: 'ShowHelp'
-						}]
+						}
+						// , {
+							// xtype: 'button',
+							// enableToggle: false,
+							// allowDepress: false,
+							// scale: 'medium',
+							// icon: 'gis_icons/mActionHelp.png',
+							// tooltipType: 'qtip',
+							// tooltip: showHelpTooltipString[lang],
+							// id: 'ShowHelp'
+						// }
+						]
 					},
 					bbar: {
 						xtype: 'toolbar',

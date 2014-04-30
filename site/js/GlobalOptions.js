@@ -7,7 +7,8 @@ var helpfile = "help_en.html";
 //Servername (optional) and path and name name of QGIS mapserver FCGI-file
 //either with or without server-name - without servername recommended for easier porting to other servers
 //do not add a ? or & after the .fcgi extension
-var serverAndCGI = "/cgi-bin/qgis_mapserv.fcgi";
+//var serverAndCGI = "/cgi-bin/qgis_mapserv.fcgi";
+var serverAndCGI = "/wms";
 
 //Define whether you want to use the GetProjectSettings extension of QGIS Server
 //for more configuration options in the project.
@@ -44,11 +45,12 @@ var searchBoxGetGeomURL = null; // "/wsgi/getSearchGeom.wsgi";
 var autoActivateSearchGeometryLayer = true;
 
 // Used to dynamically determine the project.
-var project_map = Ext.urlDecode(window.location.search.substring(1)).map;
+var project_map = '/home/user/GIS/projects/slo_demo.qgs';//Ext.urlDecode(window.location.search.substring(1)).map;
 
+//TODO To paše drugam config.php ali pa na konec klienta
 // PHP based search scripts (postgis layers only)
-//var searchBoxQueryURL = '../php/search.php?map=' + project_map;
-//var searchBoxGetGeomURL = '../php/search_geom.php?map=' + project_map;
+//var searchBoxQueryURL = 'client/php/search.php?map=' + project_map;
+//var searchBoxGetGeomURL = 'client/php/search_geom.php?map=' + project_map;
 
 // show the permalink button
 var enablePermalink = true;
@@ -57,13 +59,15 @@ var permaLinkURLShortener = null; // "/wsgi/createShortPermalink.wsgi";
 
 // enable to use commercial Google and Bing layers (also add BingApiKey)
 var enableBingCommercialMaps = false;
+var enableMapboxMaps = true;
+var mapBoxID = "uros.hjipdj9p";	//mapbox terrain map
 
 if (enableBingCommercialMaps) {
     var bingApiKey = "add Bing api key here"; // http://msdn.microsoft.com/en-us/library/ff428642.aspx
 }
 var enableGoogleCommercialMaps = true;
 var enableBGMaps = false;
-if (enableBingCommercialMaps || enableGoogleCommercialMaps) {
+if (enableBingCommercialMaps || enableGoogleCommercialMaps || enableMapboxMaps) {
 	enableBGMaps = true;
 }
 if (enableBGMaps) {
@@ -92,17 +96,25 @@ var showFeatureInfoLayerTitle = true;
 var simpleWmsSearchMaxResults = 10;
 
 var simpleWmsSearch = {
-  title: "Search continent",
+  title: "Parcela",
   query: 'simpleWmsSearch',
   useWmsRequest: true,
-  queryLayer: "Country",
+  queryLayer: "Parcele",
   formItems: [
     {
       xtype: 'textfield',
-      name: 'name',
-      fieldLabel: "Name",
+      name: 'ko_sif',
+      fieldLabel: "Katastrska občina",
       allowBlank: false,
-      blankText: "Please enter a name (e.g. 'africa')",
+      blankText: "Vnesi šifro katastrske občine (1234)",
+      filterOp: "="
+    },
+	{
+      xtype: 'textfield',
+      name: 'par_sif',
+      fieldLabel: "Parcelna št.",
+      allowBlank: false,
+      blankText: "Vnesi parcelno številko (1/5)",
       filterOp: "="
     }
   ],
@@ -115,7 +127,7 @@ var simpleWmsSearch = {
 };
 
 var urlRewriteSearch = {
-  title: "Search letter",
+  title: "Lokacija",
   query: 'samplesearch',
   formItems: [
     {
@@ -126,7 +138,7 @@ var urlRewriteSearch = {
     {
       xtype: 'textfield',
       name: 'colour',
-      fieldLabel: "Colour",
+      fieldLabel: "Naslov",
       allowBlank: false,
       blankText: "Please enter a colour (e.g. 'orange')"
     }
@@ -139,13 +151,14 @@ var urlRewriteSearch = {
   selectionZoom: 1
 };
 
+//TODO To bi lahko bilo zraven projekta js ali pa v bazi, sem ne paše!!!
 //list of configs for QGIS.SearchPanel per map name
 var mapSearchPanelConfigs = {
-  "helloworld": [simpleWmsSearch, urlRewriteSearch]
+  "slo_demo": [simpleWmsSearch, urlRewriteSearch]
 };
 
 // ABP: needed for helloworld if no rewrite
-mapSearchPanelConfigs[project_map] = [simpleWmsSearch, urlRewriteSearch];
+//mapSearchPanelConfigs[project_map] = [simpleWmsSearch, urlRewriteSearch];
 
 //templates to define tooltips for a layer, to be shown on hover identify. The layer fields must be wrapped inside <%%> special tags.
 //if a layers field is found with the name "tooltip" its content will have precedence over this configuration
@@ -163,7 +176,7 @@ var tooltipTemplates = {
 // RightPanel. These additional panels are hidden by default because
 // their expansion and collapse trigger a map resize->reload cycle that
 // can slow down the application.
-var mapSearchPanelOutputRegion = 'popup' ; // Possible values: default,right,bottom,popup
+var mapSearchPanelOutputRegion = 'default' ; // Possible values: default,right,bottom,popup
 
 // Interactive legend. This is based on PHP get_legend.php script.
 // You can define here an alternate URL for this service
@@ -174,19 +187,19 @@ var mapSearchPanelOutputRegion = 'popup' ; // Possible values: default,right,bot
 //note that you have to also link a GISProjectListing.js file containing a valid
 //project listing structure - the root object is called 'gis_projects'
 //have a look at the template file and documentation for the correct json structure
-var mapThemeSwitcherActive = true;
+var mapThemeSwitcherActive = false;
 //you can provide an alternative template for the theme-switcher - see also file ThemeSwitcher.js (ThemeSwitcher.prototype.initialize)
 var themeSwitcherTemplate = null;
 
 //first part of titlebar text
-var titleBarText = "GIS-Browser - "; // will be appended with project title
+var titleBarText = TR.appName; // will be appended with project title
 
 // header logo image and link
-var headerLogoImg = null; // path to image, set null for no logo
-var headerLogoHeight = 60; // logo image height in pixels
-var headerLogoLink = ""; // logo links to this URL
-var headerTermsOfUseText = null; // set null for no link
-var headerTermsOfUseLink = ""; // URL to terms of use
+var headerLogoImg = '/gisapp/admin/resources/images/headerLogoImg.png'; // path to image, set null for no logo
+var headerLogoHeight = 24; // logo image height in pixels
+var headerLogoLink = ''; // logo links to this URL
+var headerTermsOfUseText = TR.logoutLabel; // set null for no link
+var headerTermsOfUseLink = "http://146.247.25.46/gisapp/admin/login.php?action=logout"; // URL to terms of use
 
 // optional project title per map name
 var projectTitles = {
@@ -217,7 +230,7 @@ var authid = "EPSG:"+3857;
 var qgisLayerTransparency = true;
 
 //number of zoomlevels, uses main map layer and all base layers
-var ZOOM_LEVELS = 22;
+var ZOOM_LEVELS = 20;
 
 // OpenLayers global options
 // see http://dev.openlayers.org/releases/OpenLayers-2.10/doc/apidocs/files/OpenLayers/Map-js.html
@@ -229,6 +242,7 @@ var MapOptions = {
   numZoomLevels:ZOOM_LEVELS,
   fractionalZoom: enableBGMaps ? false : true,
   transitionEffect:"resize",
+  //zoomDuration: 1,
   controls: []
 };
 
@@ -250,18 +264,25 @@ var LayerOptions = {
 //overview map settings - do not change variable names!
 var OverviewMapOptions = {
   projection: new OpenLayers.Projection(authid),
-  units: "m",
-  maxScale:50,
-  minScale:300000000,
+//  units: "m",
+//  maxScale:50,
+//  minScale:300000000,
+//  numZoomLevels:ZOOM_LEVELS,
   transitionEffect:"resize"
 };
 var OverviewMapSize = new OpenLayers.Size(200,200);
 var OverviewMapMaximized = false; // is the overview map opend or closed by default
-var overviewLayer = new OpenLayers.Layer.WMS("Overview-Map",
-  serverAndCGI+"?map=/home/web/qgis-web-client/projects/naturalearth_110million.qgs",
-  {layers:"Land",format:"image/png"},
-  {buffer:0,singleTile:true,transitionEffect:"resize"});
+var overviewLayer = new OpenLayers.Layer.XYZ("Overview-Map",
+  // serverAndCGI+"?map=/home/web/qgis-web-client/projects/naturalearth_110million.qgs",
+  // {layers:"Land",format:"image/png"},
+  // {buffer:0,singleTile:true,transitionEffect:"resize"});
 
+		["http://a.tiles.mapbox.com/v3/uros.hjj0ea4h/${z}/${x}/${y}.png"], {
+		sphericalMercator: true,
+			wrapDateLine: true,
+			numZoomLevels: ZOOM_LEVELS
+		});
+		
 // prevent the user from choosing a print resolution
 // if fixedPrintResolution = null, the user is allowed to choose the print resolution.
 var fixedPrintResolution = null; // for a fixed resolution of 200dpi fill 200
@@ -315,6 +336,9 @@ var printCapabilities={
   ],
   "layouts":[]
 };
+
+//uros,ker ne nalagam gisprojectlisting
+var gis_projects = {"path": "/gisapp/"};
 
 // <------------ No changes should be needed below here ------------------>
 

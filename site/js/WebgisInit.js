@@ -18,6 +18,7 @@ var thematicLayer, highlightLayer, featureInfoHighlightLayer;
 var googleSatelliteLayer;
 var googleMapLayer;
 var bingSatelliteLayer;
+var mapBoxLayer;
 var highLightGeometry = new Array();
 var WMSGetFInfo, WMSGetFInfoHover;
 var lastLayer, lastFeature;
@@ -132,6 +133,41 @@ Ext.onReady(function () {
 		baseLayers.push(bingSatelliteLayer);
 	}
 
+	if (enableMapboxMaps) {
+		mapBoxLayer = new OpenLayers.Layer.XYZ("Topografska karta",
+			["http://a.tiles.mapbox.com/v3/"+mapBoxID+"/${z}/${x}/${y}.png"], {
+			sphericalMercator: true,
+			wrapDateLine: true,
+			numZoomLevels: ZOOM_LEVELS
+		});
+		baseLayers.push(mapBoxLayer);
+		//hibrid
+		mapBoxLayer2 = new OpenLayers.Layer.XYZ("Hibridni prikaz",
+			["http://a.tiles.mapbox.com/v3/uros.i36cl0p5/${z}/${x}/${y}.png"], {
+			sphericalMercator: true,
+			wrapDateLine: true,
+			numZoomLevels: ZOOM_LEVELS
+		});
+		baseLayers.push(mapBoxLayer2);
+		//satelite
+		mapBoxLayer3 = new OpenLayers.Layer.XYZ("Satelitski posnetki",
+			["http://a.tiles.mapbox.com/v3/uros.i40jk6ig/${z}/${x}/${y}.png"], {
+			sphericalMercator: true,
+			wrapDateLine: true,
+			numZoomLevels: ZOOM_LEVELS
+		});
+		baseLayers.push(mapBoxLayer3);
+		
+				//test
+		mapBoxLayer4 = new OpenLayers.Layer.XYZ("test",
+			["http://a.tiles.mapbox.com/v3/uros.i40ind9b/${z}/${x}/${y}.png"], {
+			sphericalMercator: true,
+			wrapDateLine: true,
+			numZoomLevels: ZOOM_LEVELS
+		});
+		baseLayers.push(mapBoxLayer4);
+		
+	}
 	if (urlParamsOK) {
 		loadWMSConfig();
 	} else {
@@ -222,31 +258,32 @@ function postLoading() {
 	//set root node to active layer of layertree
 	layerTree.selectPath(layerTree.root.firstChild.getPath());
 
-	applyPermalinkParams();
+	//uros comment out
+	//applyPermalinkParams();
 
 	//now set all visible layers and document/toolbar title
 	var layerNode;
 	layerTree.suspendEvents();
 	if (layerTree.root.hasChildNodes()) {
 		//set titles in document and toolbar
-		var title = layerTree.root.firstChild.text;
-		if (title in projectTitles) {
-			title = projectTitles[title];
-		}
-		document.title = titleBarText + title;
+		// var title = layerTree.root.firstChild.text;
+		// if (title in projectTitles) {
+			// title = projectTitles[title];
+		// }
+		document.title = titleBarText;
 		Ext.get('panel_header_title').update(document.title);
 
 		// set header logo and link
 		if (headerLogoImg != null) {
 			Ext.select('#panel_header_link a').replaceWith({
-				tag: 'a',
-				href: headerLogoLink,
-				target: '_blank',
-				children: [{
+				//tag: 'a',
+				//href: headerLogoLink,
+				//target: '_blank',
+				//children: [{
 					tag: 'img',
 					src: headerLogoImg,
 					height: headerLogoHeight
-				}]
+				//}]
 			});
 
 			// adjust title position
@@ -255,22 +292,37 @@ function postLoading() {
 			Ext.get('panel_header_title').setStyle('padding-top', paddingTop + 'px');
 		}
 
+		//user
+		paddingTop = (headerLogoHeight - 12) / 2;
+		Ext.select('#panel_header_user a').replaceWith({
+				tag: 'a',
+				children: [{
+					tag: 'img',
+					src: userLogoImg,
+					height: 14
+				}]
+			});
+		
+		// adjust position
+		Ext.get('panel_header_user').setStyle('padding-top', paddingTop + 'px');
+
 		// set terms of use link
+
 		if (headerTermsOfUseText != null) {
 			Ext.select('#panel_header_terms_of_use a').replaceWith({
 				tag: 'a',
 				href: headerTermsOfUseLink,
 				html: headerTermsOfUseText,
-				target: '_blank'
+				target: '_self'
 			});
 
 			if (headerLogoImg != null) {
 				// adjust terms of use position
-				paddingTop = (headerLogoHeight - 12) / 2;
 				Ext.get('panel_header_terms_of_use').setStyle('padding-top', paddingTop + 'px');
 			}
 		}
-
+		
+		
 		//now iterate 'visibleLayers'
 		if (visibleLayers == null) {
 			//in case the visible layers are not provided as URL parameter we read the visibility settings from the
@@ -332,7 +384,7 @@ function postLoading() {
         } else {
             Ext.getCmp('SendPermalink').handler = mapToolbarHandler;
         }
-		Ext.getCmp('ShowHelp').handler = mapToolbarHandler;
+		//Ext.getCmp('ShowHelp').handler = mapToolbarHandler;
 
 		// Add custom buttons (Customizations.js)
 		customToolbarLoad();
@@ -623,10 +675,20 @@ function postLoading() {
 		//add OpenLayers map controls
 		geoExtMap.map.addControl(new OpenLayers.Control.KeyboardDefaults());
 		geoExtMap.map.addControl(new OpenLayers.Control.Navigation());
+		
+		//na tablici ni efekta s tem, to je menda že default, problem je v google maps sloju, to išči dalje
+		//geoExtMap.map.addControl(new OpenLayers.Control.TouchNavigation({
+        //        dragPanOptions: {
+        //            enableKinetic: true
+        //        }
+        //    }));
+		
 		//to hide miles/feet in the graphical scale bar we need to adapt "olControlScaleLineBottom" in file /OpenLayers/theme/default/style.css: display:none;
 		geoExtMap.map.addControl(new OpenLayers.Control.ScaleLine());
-		geoExtMap.map.addControl(new OpenLayers.Control.PanZoomBar({zoomWorldIcon:true,forceFixedZoomLevel:false}));
-
+		
+		//geoExtMap.map.addControl(new OpenLayers.Control.PanZoomBar({zoomWorldIcon:true,forceFixedZoomLevel:false}));
+		geoExtMap.map.addControl(new OpenLayers.Control.Zoom());
+		
 		//coordinate display
 		coordinateTextField = Ext.getCmp('CoordinateTextField')
 		geoExtMap.map.events.register('mousemove', this, function (evt) {
@@ -804,11 +866,8 @@ function postLoading() {
 		//map themes panel
 		if (mapThemeSwitcherActive == true) {
 			mapThemeSwitcher = new ThemeSwitcher(Ext.getCmp('MapPanel'));
-		} else {
-			// hide map theme button
-			Ext.getCmp('mapThemeButton').hide();
-		}
-
+			Ext.getCmp('mapThemeButton').show();
+		} 
 
 		function showURLParametersSearch(searchPanelConfigs) {
 			if ('query' in urlParams) {

@@ -1,0 +1,1 @@
+Build with qgis-web-client configuration with latest developers version Open Layers 2.14 dev (23.4.2014)

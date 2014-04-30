@@ -46,7 +46,7 @@ if (serverAndCGI.substr(serverAndCGI.length - 3, 3).toLowerCase() === "cgi") {
 //patch ends
 if (!norewrite) {
 	//Get map name from base URL (e.g. http://example.com/maps/mapname)
-	var urlBaseArray = urlArray[0].split('/')
+	var urlBaseArray = urlArray[0].split('/');
 	//Remove host and first element of path. http://example.com/maps/subdir/mapname -> subdir/mapname
 	var map = urlBaseArray.slice(4).join('/');
 	//Search for wms directory suffix (maps-protected -> wms-protected)
