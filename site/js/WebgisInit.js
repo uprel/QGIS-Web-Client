@@ -15,10 +15,6 @@ var selectedLayers; //later an array containing all visible (selected) layers
 var selectedQueryableLayers; //later an array of all visible (selected and queryable) layers
 var allLayers; //later an array containing all leaf layers
 var thematicLayer, highlightLayer, featureInfoHighlightLayer;
-var googleSatelliteLayer;
-var googleMapLayer;
-var bingSatelliteLayer;
-var mapBoxLayer;
 var highLightGeometry = new Array();
 var WMSGetFInfo, WMSGetFInfoHover;
 var lastLayer, lastFeature;
@@ -56,7 +52,6 @@ var legendMetaTabPanel; //a reference to the Ext tabpanel holding the tabs for l
 var legendTab; //a reference to the Ext tab holding the legend graphic
 var metadataTab; //a reference to the Ext tab holding the metadata information
 var measurePopup;
-var baseLayers = [];
 var currentlyVisibleBaseLayer = null;
 var layerImageFormats = layerImageFormats || []; // use config from GlobalOptions if any
 
@@ -109,65 +104,7 @@ Ext.onReady(function () {
 
 	//set some status messsages
 	mainStatusText.setText(mapAppLoadingString[lang]);
-
-	if (enableGoogleCommercialMaps) {
-		googleSatelliteLayer = new OpenLayers.Layer.Google(
-			"Google Satellite",
-			{type: google.maps.MapTypeId.SATELLITE, numZoomLevels: ZOOM_LEVELS, isBaseLayer: true}
-		);
-		baseLayers.push(googleSatelliteLayer);
-		googleMapLayer = new OpenLayers.Layer.Google(
-			"Google Map",
-			{type: google.maps.MapTypeId.MAP, numZoomLevels: ZOOM_LEVELS, isBaseLayer: true}
-		);
-		baseLayers.push(googleMapLayer);
-	}
-	if (enableBingCommercialMaps) {
-		bingSatelliteLayer = new OpenLayers.Layer.Bing({
-			name: "Bing Satellite",
-			key: bingApiKey,
-			type: "Aerial",
-			isBaseLayer: true,
-			visibility: false
-		});
-		baseLayers.push(bingSatelliteLayer);
-	}
-
-	if (enableMapboxMaps) {
-		mapBoxLayer = new OpenLayers.Layer.XYZ("Topografska karta",
-			["http://a.tiles.mapbox.com/v3/"+mapBoxID+"/${z}/${x}/${y}.png"], {
-			sphericalMercator: true,
-			wrapDateLine: true,
-			numZoomLevels: ZOOM_LEVELS
-		});
-		baseLayers.push(mapBoxLayer);
-		//hibrid
-		mapBoxLayer2 = new OpenLayers.Layer.XYZ("Hibridni prikaz",
-			["http://a.tiles.mapbox.com/v3/uros.i36cl0p5/${z}/${x}/${y}.png"], {
-			sphericalMercator: true,
-			wrapDateLine: true,
-			numZoomLevels: ZOOM_LEVELS
-		});
-		baseLayers.push(mapBoxLayer2);
-		//satelite
-		mapBoxLayer3 = new OpenLayers.Layer.XYZ("Satelitski posnetki",
-			["http://a.tiles.mapbox.com/v3/uros.i40jk6ig/${z}/${x}/${y}.png"], {
-			sphericalMercator: true,
-			wrapDateLine: true,
-			numZoomLevels: ZOOM_LEVELS
-		});
-		baseLayers.push(mapBoxLayer3);
-		
-				//test
-		mapBoxLayer4 = new OpenLayers.Layer.XYZ("test",
-			["http://a.tiles.mapbox.com/v3/uros.i40ind9b/${z}/${x}/${y}.png"], {
-			sphericalMercator: true,
-			wrapDateLine: true,
-			numZoomLevels: ZOOM_LEVELS
-		});
-		baseLayers.push(mapBoxLayer4);
-		
-	}
+	
 	if (urlParamsOK) {
 		loadWMSConfig();
 	} else {
@@ -270,7 +207,7 @@ function postLoading() {
 		// if (title in projectTitles) {
 			// title = projectTitles[title];
 		// }
-		document.title = titleBarText;
+		document.title = titleBarText+projectData.client_display_name;
 		Ext.get('panel_header_title').update(document.title);
 
 		// set header logo and link
@@ -312,7 +249,9 @@ function postLoading() {
 			Ext.select('#panel_header_terms_of_use a').replaceWith({
 				tag: 'a',
 				href: headerTermsOfUseLink,
-				html: headerTermsOfUseText,
+				//html: headerTermsOfUseText,
+				cls: 'x-tool',
+				title: headerTermsOfUseText,
 				target: '_self'
 			});
 
@@ -838,7 +777,10 @@ function postLoading() {
 					width: 300,
 					minChars: 2,
 					loadingText: geonamesLoadingString[lang],
-					emptyText: geonamesEmptyString[lang]
+					emptyText: geonamesEmptyString[lang],
+					zoom: 14,
+					lang: lang,
+					username: geoNamesUserName
 				});
 				var emptySearchFieldButton = new Ext.Button({
 					scale: 'medium',

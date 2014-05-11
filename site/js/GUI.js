@@ -153,6 +153,8 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 						xtype: 'panel',
 						title: searchPanelTitleString[lang],
 						id: 'SearchPanel',
+						border: false,
+						frame: false,
 						items: [{
 							xtype: 'tabpanel',
 							enableTabScroll: true,

@@ -7,8 +7,7 @@ var helpfile = "help_en.html";
 //Servername (optional) and path and name name of QGIS mapserver FCGI-file
 //either with or without server-name - without servername recommended for easier porting to other servers
 //do not add a ? or & after the .fcgi extension
-//var serverAndCGI = "/cgi-bin/qgis_mapserv.fcgi";
-var serverAndCGI = "/wms";
+var serverAndCGI = "/cgi-bin/qgis_mapserv.fcgi";
 
 //Define whether you want to use the GetProjectSettings extension of QGIS Server
 //for more configuration options in the project.
@@ -35,6 +34,8 @@ var useGeodesicMeasurement = true;
 //search box for queries while typing
 //enable to use GeoNames search
 var useGeoNamesSearchBox = false;
+var geoNamesUserName = 'insert your geonames user name';
+
 //URL for custom search scripts
 var searchBoxQueryURL = null; // "/wsgi/search.wsgi?query=";
 var searchBoxGetGeomURL = null; // "/wsgi/getSearchGeom.wsgi";
@@ -59,15 +60,13 @@ var permaLinkURLShortener = null; // "/wsgi/createShortPermalink.wsgi";
 
 // enable to use commercial Google and Bing layers (also add BingApiKey)
 var enableBingCommercialMaps = false;
-var enableMapboxMaps = true;
-var mapBoxID = "uros.hjipdj9p";	//mapbox terrain map
 
 if (enableBingCommercialMaps) {
     var bingApiKey = "add Bing api key here"; // http://msdn.microsoft.com/en-us/library/ff428642.aspx
 }
 var enableGoogleCommercialMaps = true;
 var enableBGMaps = false;
-if (enableBingCommercialMaps || enableGoogleCommercialMaps || enableMapboxMaps) {
+if (enableBingCommercialMaps || enableGoogleCommercialMaps) {
 	enableBGMaps = true;
 }
 if (enableBGMaps) {
@@ -75,6 +74,29 @@ if (enableBGMaps) {
 	// set to a value < 0 to not show any backgroundLayer
 	// this setting is overridden if a value for url-parameter visibleBackgroundLayer is passed
 	var initialBGMap = 0;
+}
+
+if (enableGoogleCommercialMaps) {
+		googleSatelliteLayer = new OpenLayers.Layer.Google(
+			"Google Satellite",
+			{type: google.maps.MapTypeId.SATELLITE, numZoomLevels: ZOOM_LEVELS, isBaseLayer: true}
+		);
+		baseLayers.push(googleSatelliteLayer);
+		googleMapLayer = new OpenLayers.Layer.Google(
+			"Google Map",
+			{type: google.maps.MapTypeId.MAP, numZoomLevels: ZOOM_LEVELS, isBaseLayer: true}
+		);
+		baseLayers.push(googleMapLayer);
+	}
+if (enableBingCommercialMaps) {
+	bingSatelliteLayer = new OpenLayers.Layer.Bing({
+		name: "Bing Satellite",
+		key: bingApiKey,
+		type: "Aerial",
+		isBaseLayer: true,
+		visibility: false
+	});
+	baseLayers.push(bingSatelliteLayer);
 }
 
 // media base URL to match media links in layer attributes
@@ -230,7 +252,7 @@ var authid = "EPSG:"+3857;
 var qgisLayerTransparency = true;
 
 //number of zoomlevels, uses main map layer and all base layers
-var ZOOM_LEVELS = 20;
+var ZOOM_LEVELS = 22;
 
 // OpenLayers global options
 // see http://dev.openlayers.org/releases/OpenLayers-2.10/doc/apidocs/files/OpenLayers/Map-js.html
@@ -242,7 +264,6 @@ var MapOptions = {
   numZoomLevels:ZOOM_LEVELS,
   fractionalZoom: enableBGMaps ? false : true,
   transitionEffect:"resize",
-  //zoomDuration: 1,
   controls: []
 };
 

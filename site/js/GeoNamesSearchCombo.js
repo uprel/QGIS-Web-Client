@@ -56,7 +56,7 @@ GeoExt.ux.GeoNamesSearchCombo = Ext.extend(Ext.form.ComboBox, {
     /** private: property[zoom]
      *  ``Number``
      */
-    zoom: 18,
+    zoom: 8,
 
     /** api: config[minChars]
      *  ``Number`` Minimum number of characters to be typed before
@@ -93,15 +93,16 @@ GeoExt.ux.GeoNamesSearchCombo = Ext.extend(Ext.form.ComboBox, {
     /** private: property[lang]
      *  ``String``
      */
-    lang: 'si',
+    lang: 'en',
+	
+	/** api: config[username]
+     *  ``String`` Geonames requiers username
+     */
+    /** private: property[username]
+     *  ``String``
+     */
+	username: '',
 
-	
-	
-	username: 'uprel',
-	
-	
-	
-	
     /** api: config[countryString]
      *  ``String`` Country in which to make a GeoNames search, default is all countries.
      *  Providing several countries can be done like: countryString: country=FR&country=GP
@@ -110,7 +111,7 @@ GeoExt.ux.GeoNamesSearchCombo = Ext.extend(Ext.form.ComboBox, {
     /** private: property[countryString]
      *  ``String``
      */
-    countryString: 'country=SI',
+    countryString: '',
 
     /** api: config[continentCode]
      *  ``String`` Restricts the search for toponym of the given continent,
