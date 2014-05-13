@@ -1682,7 +1682,7 @@ geonamesLoadingString["uk"] = "Пошук в Геоданих...";
 geonamesLoadingString["hu"] = "Keresés geoadatokban...";
 geonamesLoadingString["ro"] = "Caută în Geonames...";
 geonamesLoadingString["ru"] = "Поиск в геоданных...";
-geonamesLoadingString["si"] = "Search in Geonames..."; //FIXME
+geonamesLoadingString["si"] = "iskanje poteka...";
 geonamesLoadingString["nl"] = "Zoek in Geonames...";
 geonamesLoadingString["pl"] = "Szukaj w Geonames...";
 
@@ -1698,7 +1698,7 @@ geonamesEmptyString["uk"] = "Пошук місць у Геоданих";
 geonamesEmptyString["hu"] = "Keresés a térképen";
 geonamesEmptyString["ro"] = "Caută locația în Geonames";
 geonamesEmptyString["ru"] = "Поиск местоположения в геоданных";
-geonamesEmptyString["si"] = "Search location in Geonames";	//FIXME
+geonamesEmptyString["si"] = "hitro iskanje lokacije";
 geonamesEmptyString["nl"] = "Zoek locatie in Geonames";
 geonamesEmptyString["pl"] = "Wyszukaj lokację w Geonames";
 

@@ -779,7 +779,9 @@ function postLoading() {
 					loadingText: geonamesLoadingString[lang],
 					emptyText: geonamesEmptyString[lang],
 					zoom: 14,
-					lang: lang,
+					//lang: lang,
+					countryString: 'country=SI',
+					tpl: '<tpl for="."><div class="x-combo-list-item"><h1>{name} (Občina {adminName1})<br></h1>{fcodeName}</div></tpl>',
 					username: geoNamesUserName
 				});
 				var emptySearchFieldButton = new Ext.Button({
