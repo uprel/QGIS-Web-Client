@@ -57,16 +57,6 @@ var showFeatureInfoLayerTitle = true;
 //Number of results: FEATURE_COUNT in WMS request
 var simpleWmsSearchMaxResults = 10;
 
-//TODO To bi lahko bilo zraven projekta js ali pa v bazi, sem ne paše!!!
-//list of configs for QGIS.SearchPanel per map name
-//samo ime projekta na produkciji, lokalno pa D:/MAP/projects/slo_demo.qgs
-
-//TODO to moraš direktno postaviti v searchPanel
-var mapSearchPanelConfigs = {
-  "D:/MAP/projects/slo_demo.qgs": [projectData.search[0],projectData.search[1]]
-};
-
-
 //templates to define tooltips for a layer, to be shown on hover identify. The layer fields must be wrapped inside <%%> special tags.
 //if a layers field is found with the name "tooltip" its content will have precedence over this configuration
 var tooltipTemplates = {

@@ -938,10 +938,11 @@ function postLoading() {
         }
 
 		//search panel and URL search parameters
-		var searchPanelConfigs = [];
-		if (wmsMapName in mapSearchPanelConfigs) {
-			searchPanelConfigs = mapSearchPanelConfigs[wmsMapName];
-		}
+		//Uros: bind to projectData
+		var searchPanelConfigs = projectData.search;	//[];
+		// if (wmsMapName in mapSearchPanelConfigs) {
+			// searchPanelConfigs = mapSearchPanelConfigs[wmsMapName];
+		// }
 		if (searchPanelConfigs.length > 0) {
 			// add QGIS search panels
 			var searchTabPanel = Ext.getCmp('SearchTabPanel');
