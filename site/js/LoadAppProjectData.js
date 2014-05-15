@@ -27,8 +27,8 @@ var autoActivateSearchGeometryLayer = true;
 
 //TODO To paše drugam config.php ali pa na konec klienta
 // PHP based search scripts (postgis layers only)
-//var searchBoxQueryURL = 'client/php/search.php?map=' + project_map;
-//var searchBoxGetGeomURL = 'client/php/search_geom.php?map=' + project_map;
+//var searchBoxQueryURL = 'client/php/search.php?map=' + projectData.project;
+//var searchBoxGetGeomURL = 'client/php/search_geom.php?map=' + projectData.project;
 
 var enablePermalink = true;
 var permaLinkURLShortener = null; // "/wsgi/createShortPermalink.wsgi";

@@ -780,19 +780,21 @@ function postLoading() {
 					emptyText: geonamesEmptyString[lang],
 					zoom: 14,
 					//lang: lang,
-					countryString: 'country=SI',
-					tpl: '<tpl for="."><div class="x-combo-list-item"><h1>{name} (Občina {adminName1})<br></h1>{fcodeName}</div></tpl>',
+					featureClassString: 'featureClass=P&featureClass=H&featureClass=L&featureClass=T&featureClass=V',
+					country: 'SI',
+					tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name} (Občina {adminName1})</h3></div></tpl>',
 					username: geoNamesUserName
 				});
-				var emptySearchFieldButton = new Ext.Button({
-					scale: 'medium',
-					icon: 'gis_icons/mActionUndo.png',
-					tooltipType: 'qtip',
-					tooltip: resetSearchFieldTooltipString[lang],
-					id: 'EmptySearchField'
-				});
-				emptySearchFieldButton.handler = mapToolbarHandler;
-				myTopToolbar.insert(myTopToolbar.items.length, emptySearchFieldButton);
+				//disabling button for resetting search, not needed, not working
+				// var emptySearchFieldButton = new Ext.Button({
+					// scale: 'medium',
+					// icon: 'gis_icons/mActionUndo.png',
+					// tooltipType: 'qtip',
+					// tooltip: resetSearchFieldTooltipString[lang],
+					// id: 'EmptySearchField'
+				// });
+				// emptySearchFieldButton.handler = mapToolbarHandler;
+				// myTopToolbar.insert(myTopToolbar.items.length, emptySearchFieldButton);
 			} else {
 				qgisSearchCombo = new QGIS.SearchComboBox({
 					map: geoExtMap.map,
