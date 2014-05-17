@@ -15,3 +15,4 @@ qgis-web-client.conf
 site/js/Translations_custom.js
 .gitignore
 
+site/qgiswebclient.html
