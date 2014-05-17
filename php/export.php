@@ -19,7 +19,7 @@
 */ 
 
 $now = date("Ymd_His");
-$filename = 'myfile_' .$now .'.shp';
+$filename = 'D:/MAP/_temp/myfile_' .$now;
 $filename_zip = 'myzip_' .$now .'.zip';
 
 
@@ -38,8 +38,8 @@ if(isset($_REQUEST['map0:extent'])){
 die('You must provide a valid bounding box');
 }
 
-if(isset($_REQUEST['srid'])){
-	$srid = $_REQUEST['srid'];
+if(isset($_REQUEST['SRS'])){
+	$srid = substr(strrchr($_REQUEST['SRS'],':'),1);
 	
 	if (! is_numeric($srid)){
 		die('SQL injection prevention : bad srid');
@@ -47,27 +47,37 @@ if(isset($_REQUEST['srid'])){
 	
 }
 
-
 //TODO : Adapt for your need
-$mycmd = 'ogr2ogr -f "ESRI Shapefile" '.$filename .'PG:"host=host user=myuser password=mypass port=5432 dbname=dbname" -sql "SELECT the_geom FROM tablename WHERE the_geom && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
+$mycmd = 'C:\OSGeo4W\bin\ogr2ogr -f "ESRI Shapefile" '.$filename .'.shp PG:"host=localhost user=pguser password=pguser14 port=5432 dbname=geodb" -sql "SELECT * FROM units.state_region WHERE geometry && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
 //ST_MakeEnvelope(double precision xmin, double precision ymin, double precision xmax, double precision ymax, integer srid=unknown);
 
-$output = shell_exec($mycmd);
+try {
+
+	$output = shell_exec($mycmd);
 
 
-$zip = new ZipArchive();
+	$zip = new ZipArchive();
 
-if ($zip->open($filename_zip, ZipArchive::CREATE)!==TRUE) {
-    exit("Cannot write <$filename_zip>\n");
+	if ($zip->open($filename_zip, ZipArchive::CREATE)!==TRUE) {
+		exit("Cannot write <$filename_zip>\n");
+	}
+
+	//$zip->addFile("./" .$filename ,$now ."/" .$filename);
+	$zip->addFile($filename.'.shp', basename($filename.'.shp'));
+	$zip->addFile($filename.'.shx', basename($filename.'.shx'));
+	$zip->addFile($filename.'.dbf', basename($filename.'.dbf'));
+	$zip->close();
+
+
+	//$fsize = filesize('./' .$filename_zip);
+	$fsize = filesize($filename_zip);
+
 }
-
-$zip->addEmptyDir($now);
-$zip->addFile("./" .$filename ,$now ."/" .$filename);
-$zip->close();
-
-
-$fsize = filesize('./' .$filename_zip); 
-
+catch(Exception $e) {
+	echo 'Error:' , $e->getMessage();
+	exit();
+}
+	
     header("Pragma: public"); // required
     header("Expires: 0");
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -79,13 +89,13 @@ $fsize = filesize('./' .$filename_zip);
     ob_clean();
     flush();
 
-
-    readfile('./' .$filename_zip);
+    readfile($filename_zip);
 	
 	unlink($filename); 
 	unlink($filename_zip); 
 
-    exit;
+    exit();
+
 
   
 ?>

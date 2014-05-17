@@ -126,7 +126,7 @@ function customAfterMapInit() {
 				ExportProvider = new QGIS.ExportProvider({
 						method: "POST", // "POST" recommended for production use
 						capabilities: printCapabilities, // from the info.json script in the html
-						url: '../php/export.php?'
+						url: 'client/php/export.php?'
 				});
 
 				
