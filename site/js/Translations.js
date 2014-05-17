@@ -1867,6 +1867,25 @@ contextZoomLayerExtent["nl"] = "Zoom to layer extent"; //FIXME
 contextZoomLayerExtent["pl"] = "Zoom to layer extent"; //FIXME
 
 /***********************
+Context menu items
+***********************/
+//comment, if layer is outside scale range
+var contextZoomLayerExtent = new Array();
+contextZoomLayerExtent["en"] = "Zoom to layer extent";
+contextZoomLayerExtent["es"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["de"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["fr"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["it"] = "Zoom all'estensione del layer";
+contextZoomLayerExtent["pt_PT"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["uk"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["hu"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["ro"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["ru"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["si"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["nl"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["pl"] = "Zoom to layer extent"; //FIXME
+
+/***********************
 Error Messages
 ***********************/
 
