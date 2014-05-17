@@ -1866,24 +1866,20 @@ contextZoomLayerExtent["si"] = "Zoom to layer extent"; //FIXME
 contextZoomLayerExtent["nl"] = "Zoom to layer extent"; //FIXME
 contextZoomLayerExtent["pl"] = "Zoom to layer extent"; //FIXME
 
-/***********************
-Context menu items
-***********************/
-//comment, if layer is outside scale range
-var contextZoomLayerExtent = new Array();
-contextZoomLayerExtent["en"] = "Zoom to layer extent";
-contextZoomLayerExtent["es"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["de"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["fr"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["it"] = "Zoom all'estensione del layer";
-contextZoomLayerExtent["pt_PT"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["uk"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["hu"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["ro"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["ru"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["si"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["nl"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["pl"] = "Zoom to layer extent"; //FIXME
+var contextDataExport = new Array();
+contextDataExport["en"] = "Export layer to...";
+contextDataExport["es"] = "Export layer to..."; //FIXME
+contextDataExport["de"] = "Export layer to..."; //FIXME
+contextDataExport["fr"] = "Export layer to..."; //FIXME
+contextDataExport["it"] = "Export layer to...";
+contextDataExport["pt_PT"] = "Export layer to..."; //FIXME
+contextDataExport["uk"] = "Export layer to..."; //FIXME
+contextDataExport["hu"] = "Export layer to..."; //FIXME
+contextDataExport["ro"] = "Export layer to..."; //FIXME
+contextDataExport["ru"] = "Export layer to..."; //FIXME
+contextDataExport["si"] = "Export layer to..."; //FIXME
+contextDataExport["nl"] = "Export layer to..."; //FIXME
+contextDataExport["pl"] = "Export layer to..."; //FIXME
 
 /***********************
 Error Messages

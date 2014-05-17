@@ -369,15 +369,28 @@ function postLoading() {
 	selectedQueryableLayers = Array();
 	allLayers = Array();
 	
-	// prepare the context menu for "Zoom To Layer Extent"
+	// prepare the context menu for Layer
 	menuC = new Ext.menu.Menu({
 		id: 'layerContextMenu',
-		items: {
+		items: [{
 			text: contextZoomLayerExtent[lang],
-			handler: zoomToLayerExtent,
-		}
+			iconCls: 'calendar',
+			handler: zoomToLayerExtent
+		},{
+			text: contextDataExport[lang],
+			iconCls: 'calendar',
+			menu: [{
+				id		: 'SHP',
+				text    : 'ESRI Shapefile',
+                handler : exportHandler
+			},{
+				id		: 'DXF',
+				text    : 'AutoCAD DXF',
+                handler : exportHandler
+			}]
+		}]
 	});
-
+	
 	layerTree.root.firstChild.cascade(
 		function (n) {
 			if (n.isLeaf()) {
@@ -391,6 +404,10 @@ function postLoading() {
 				
 				// add the "Zoom To Layer Extent" context menu
 				n.on ('contextMenu', contextMenuHandler);
+			}
+			else {
+				//disable contextmenu on groups 
+				n.on("contextMenu", Ext.emptyFn, null, {preventDefault: true});
 			}
 		}
 	);
@@ -794,7 +811,7 @@ function postLoading() {
 					//lang: lang,
 					featureClassString: 'featureClass=P&featureClass=H&featureClass=L&featureClass=T&featureClass=V',
 					country: 'SI',
-					tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name} (Občina {adminName1})</h3></div></tpl>',
+					tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name}</h3>{adminName1}&nbsp;</div></tpl>',
 					username: geoNamesUserName
 				});
 				//disabling button for resetting search, not needed, not working
@@ -2098,6 +2115,8 @@ function setGrayNameWhenOutsideScale() {
     }
 }
 
+// *******************
+// CONTEXT MENU STUFF
 // Function to zoom to layer extent - called by context menu on left panel (only on the leafs 
 // of tree node)
 function zoomToLayerExtent(item) {
@@ -2118,8 +2137,61 @@ function zoomToLayerExtent(item) {
 	}	
 }
 
+function exportHandler(item) {
+	var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
+	var myFormat = item.container.menuItemId;
+
+	switch(myFormat) {
+		case 'SHP':
+			exportData(myLayerName,myFormat);
+			break;
+		case 'DXF':
+			exportData(myLayerName,myFormat);
+			break;
+		default :
+			Ext.Msg.alert ('Error',myFormat+' not supported yet.');
+			break;
+	
+	}
+}
+
 // Show the menu on right click of the leaf node of the layerTree object
 function contextMenuHandler(node) {
 	node.select();
 	menuC.show ( node.ui.getAnchor());
+}
+
+
+function exportData(layer,format) {
+	
+	//current view is used as bonding box for exporting data
+	var bbox = geoExtMap.map.calculateBounds();
+	//Ext.Msg.alert('Info',layer+' ' + bbox);
+
+	var exportUrl = "./client/php/export.php?" + Ext.urlEncode({
+		map:projectData.project,
+		SRS:authid,
+		map0_extent:bbox,
+		layer:layer,
+		format:format
+	});
+
+	var body = Ext.getBody();
+	var frame = body.createChild({
+		 tag	:'iframe',
+		 cls	:'x-hidden',
+		 id		:'hiddenform-iframe',
+		 name	:'iframe',
+		 src	:exportUrl
+	});
+	
+	//tol ni ok, nekako bo treba preveriti ali je vse ok z downloadom
+	// frame.on('load', 
+		// function(e, t, o){
+			// alert(o.test);
+		// }
+	// , null, {test:'hello'});
+
+		
+
 }

@@ -17,14 +17,13 @@
  * for the full text of the license and the list of contributors.
  *
 */ 
+//Modifications: Uros Preloznik
 
-$now = date("Ymd_His");
-$filename = 'D:/MAP/_temp/myfile_' .$now;
-$filename_zip = 'myzip_' .$now .'.zip';
+require_once('helpers.php');
+require_once('../../admin/settings.php');
 
-
-if(isset($_REQUEST['map0:extent'])){
-	$extent =  explode(",", $_REQUEST['map0:extent']);
+if(isset($_REQUEST['map0_extent'])){
+	$extent =  explode(",", $_REQUEST['map0_extent']);
 	$xmin = $extent[0];
 	$ymin = $extent[1];
 	$xmax = $extent[2];
@@ -47,9 +46,78 @@ if(isset($_REQUEST['SRS'])){
 	
 }
 
-//TODO : Adapt for your need
-$mycmd = 'C:\OSGeo4W\bin\ogr2ogr -f "ESRI Shapefile" '.$filename .'.shp PG:"host=localhost user=pguser password=pguser14 port=5432 dbname=geodb" -sql "SELECT * FROM units.state_region WHERE geometry && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
-//ST_MakeEnvelope(double precision xmin, double precision ymin, double precision xmax, double precision ymax, integer srid=unknown);
+if(isset($_REQUEST['format'])) {
+	$format = $_REQUEST['format'];
+}
+else {
+	die('No format');
+}
+
+if(isset($_REQUEST['layer'])) {
+	$layername = $_REQUEST['layer'];
+}
+else {
+	die('No layer');
+}
+
+if(isset($_REQUEST['map'])) {
+	$map = $_REQUEST['map'];
+}
+else {
+	die('No map');
+}
+
+$now = date("Ymd_His");
+$layerAlias = normalize($layername);
+$filename = $layerAlias . '_' . $now;
+$filename_zip = $layerAlias . '_' . $now . '.zip';
+
+// Get project
+$project = get_project(PROJECT_PATH . $map . '.qgs');
+// Get layer
+$layer = get_layer($layername, $project);
+// Check layer provider
+if((string)$layer->provider != 'postgres' && (string)$layer->provider != 'spatialite'){
+        die('only postgis or spatialite layers are supported: ' . (string)$layer->provider);
+}
+// Get layer info
+$li = get_layer_info($layer, $project);
+
+if ((string)$layer->provider=='postgres') {
+	//other option to get it from layer_info
+	$conn = str_replace(array('\'', '"'), '', $layer->datasource);
+	//removing text sslmode and all after that
+	$conn = "PG:" . rtrim(substr($conn,0,strpos($conn,'sslmode')));
+
+	$table = $li['table'];
+	$geom = $li['geom_column'];
+	
+	if($format=='SHP') {
+		$format_name = 'ESRI Shapefile';
+	}
+	else if ($format=='DXF') {
+		$format_name = 'DXF';
+	}
+	else {
+		die ('Format not supported');
+	}
+	
+	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$filename .'.'.$format.'" "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
+
+	
+}
+else {
+	die ('only postgis layers');
+}
+	
+	
+	
+//echo (var_dump($li));	
+//echo ($conn.'</br>');
+//echo ($geom.'</br>');
+//echo ($table);
+//exit();
+
 
 try {
 
@@ -63,12 +131,17 @@ try {
 	}
 
 	//$zip->addFile("./" .$filename ,$now ."/" .$filename);
-	$zip->addFile($filename.'.shp', basename($filename.'.shp'));
-	$zip->addFile($filename.'.shx', basename($filename.'.shx'));
-	$zip->addFile($filename.'.dbf', basename($filename.'.dbf'));
+	
+	$zip->addFile($filename.'.'.$format, basename($filename.'.'.$format));
+	if($format=='SHP') {
+		$zip->addFile($filename.'.shx', basename($filename.'.shx'));
+		$zip->addFile($filename.'.dbf', basename($filename.'.dbf'));
+		$zip->addFile($filename.'.prj', basename($filename.'.prj'));
+	}
 	$zip->close();
+	
 
-
+	
 	//$fsize = filesize('./' .$filename_zip);
 	$fsize = filesize($filename_zip);
 
@@ -90,8 +163,15 @@ catch(Exception $e) {
     flush();
 
     readfile($filename_zip);
+
+	//removing shp
+	if($format=='SHP') {
+		unlink($filename.'.dbf');
+		unlink($filename.'.shx');
+		unlink($filename.'.prj');
+	}
+	unlink($filename.'.'.$format);
 	
-	unlink($filename); 
 	unlink($filename_zip); 
 
     exit();
