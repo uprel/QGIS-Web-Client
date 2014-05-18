@@ -374,11 +374,16 @@ function postLoading() {
 		id: 'layerContextMenu',
 		items: [{
 			text: contextZoomLayerExtent[lang],
-			iconCls: 'calendar',
+			//iconCls: 'calendar',
 			handler: zoomToLayerExtent
 		},{
+			text: contextOpenTable[lang],
+			//iconCls: 'calendar',
+			handler: openAttTable,
+			disabled: true
+		},{
 			text: contextDataExport[lang],
-			iconCls: 'calendar',
+			//iconCls: 'calendar',
 			menu: [{
 				id		: 'SHP',
 				text    : 'ESRI Shapefile',
@@ -387,7 +392,19 @@ function postLoading() {
 				id		: 'DXF',
 				text    : 'AutoCAD DXF',
                 handler : exportHandler
-			}]
+			}
+			// ,"-",
+			// {
+				// text: 'Koord.sistem',
+			// },{
+				// //ni ok ne dela
+				// type: 'radio',
+				// //checked: true,
+				// boxLabel: 'test'
+			
+			
+			// }
+			]
 		}]
 	});
 	
@@ -2191,7 +2208,12 @@ function exportData(layer,format) {
 			// alert(o.test);
 		// }
 	// , null, {test:'hello'});
+}
 
-		
+function openAttTable(item) {
+	var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
+	Ext.Msg.alert('Info',myLayerName);
+
+
 
 }

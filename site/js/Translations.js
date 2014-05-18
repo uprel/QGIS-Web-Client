@@ -1862,9 +1862,24 @@ contextZoomLayerExtent["uk"] = "Zoom to layer extent"; //FIXME
 contextZoomLayerExtent["hu"] = "Zoom to layer extent"; //FIXME
 contextZoomLayerExtent["ro"] = "Zoom to layer extent"; //FIXME
 contextZoomLayerExtent["ru"] = "Zoom to layer extent"; //FIXME
-contextZoomLayerExtent["si"] = "Zoom to layer extent"; //FIXME
+contextZoomLayerExtent["si"] = "Povečava na območje sloja"; //FIXME
 contextZoomLayerExtent["nl"] = "Zoom to layer extent"; //FIXME
 contextZoomLayerExtent["pl"] = "Zoom to layer extent"; //FIXME
+
+var contextOpenTable = new Array();
+contextOpenTable["en"] = "Open attribute table";
+contextOpenTable["es"] = "Open attribute table"; //FIXME
+contextOpenTable["de"] = "Open attribute table"; //FIXME
+contextOpenTable["fr"] = "Open attribute table"; //FIXME
+contextOpenTable["it"] = "Open attribute table";
+contextOpenTable["pt_PT"] = "Open attribute table"; //FIXME
+contextOpenTable["uk"] = "Open attribute table"; //FIXME
+contextOpenTable["hu"] = "Open attribute table"; //FIXME
+contextOpenTable["ro"] = "Open attribute table"; //FIXME
+contextOpenTable["ru"] = "Open attribute table"; //FIXME
+contextOpenTable["si"] = "Prikaz opisnih podatkov sloja"; //FIXME
+contextOpenTable["nl"] = "Open attribute table"; //FIXME
+contextOpenTable["pl"] = "Open attribute table"; //FIXME
 
 var contextDataExport = new Array();
 contextDataExport["en"] = "Export layer to...";
@@ -1877,7 +1892,7 @@ contextDataExport["uk"] = "Export layer to..."; //FIXME
 contextDataExport["hu"] = "Export layer to..."; //FIXME
 contextDataExport["ro"] = "Export layer to..."; //FIXME
 contextDataExport["ru"] = "Export layer to..."; //FIXME
-contextDataExport["si"] = "Export layer to..."; //FIXME
+contextDataExport["si"] = "Izvoz sloja v..."; //FIXME
 contextDataExport["nl"] = "Export layer to..."; //FIXME
 contextDataExport["pl"] = "Export layer to..."; //FIXME
 
