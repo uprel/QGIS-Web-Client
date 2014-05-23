@@ -392,7 +392,11 @@ function postLoading() {
 				id		: 'DXF',
 				text    : 'AutoCAD DXF',
                 handler : exportHandler
-			}
+            },{
+                id		: 'CSV',
+                text    : 'Text CSV',
+                handler : exportHandler
+            }
 			// ,"-",
 			// {
 				// text: 'Koord.sistem',
@@ -2165,6 +2169,9 @@ function exportHandler(item) {
 		case 'DXF':
 			exportData(myLayerName,myFormat);
 			break;
+        case 'CSV':
+            exportData(myLayerName,myFormat);
+            break;
 		default :
 			Ext.Msg.alert ('Error',myFormat+' not supported yet.');
 			break;

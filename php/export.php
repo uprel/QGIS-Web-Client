@@ -70,7 +70,10 @@ else {
 $now = date("Ymd_His");
 $layerAlias = normalize($layername);
 $filename = TEMP_PATH . $layerAlias . '_' . $now;
-$filename_zip = TEMP_PATH . $layerAlias . '_' . $now . '.zip';
+$filename_zip = $layerAlias . '_' . $now . '.zip';
+$ctype = "application/zip";
+$makeZip = true;
+$fsize = -1;
 
 // Get project
 $project = get_project(PROJECT_PATH . $map . '.qgs');
@@ -91,23 +94,30 @@ if ((string)$layer->provider=='postgres') {
 
 	$table = $li['table'];
 	$geom = $li['geom_column'];
+    $options = "";
 	
 	if($format=='SHP') {
 		$format_name = 'ESRI Shapefile';
 	}
 	else if ($format=='DXF') {
-		$format_name = 'DXF';
+		$format_name = $format;
 	}
+    else if ($format=='CSV') {
+        $format_name = $format;
+        $options = "-lco SEPARATOR=SEMICOLON";
+        $makeZip = false;
+        $filename_zip = $layerAlias . '_' . $now . '.csv';
+        $ctype = "text/csv";
+    }
 	else {
 		die ('Format not supported');
 	}
-	
-	//setting pgclientencoding
-	//export PGCLIENTENCODING=windows-1250
-	//preveriš z echo $PGCLIENTENCODING
-	
-	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$filename .'.'.strtolower($format).'" "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
-	
+
+    //setting pgclientencoding
+    putenv('PGCLIENTENCODING=windows-1250');
+
+	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$filename .'.'.strtolower($format).'" ' . $options . ' "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
+
 }
 else {
 	die ('only postgis layers');
@@ -123,29 +133,33 @@ else {
 
 try {
 
-	$output = shell_exec($mycmd);
+    $output = shell_exec($mycmd);
 
+    if($makeZip) {
 
-	$zip = new ZipArchive();
+        $zip = new ZipArchive();
 
-	if ($zip->open($filename_zip, ZipArchive::CREATE)!==TRUE) {
-		exit("Cannot write <$filename_zip>\n");
-	}
+        if ($zip->open($filename_zip, ZipArchive::CREATE)!==TRUE) {
+            exit("Cannot write <$filename_zip>\n");
+        }
 
-	//$zip->addFile("./" .$filename ,$now ."/" .$filename);
-	
-	$zip->addFile($filename.'.'.strtolower($format), basename($filename.'.'.strtolower($format)));
-	if($format=='SHP') {
-		$zip->addFile($filename.'.shx', basename($filename.'.shx'));
-		$zip->addFile($filename.'.dbf', basename($filename.'.dbf'));
-		$zip->addFile($filename.'.prj', basename($filename.'.prj'));
-	}
-	$zip->close();
-	
+        //$zip->addFile("./" .$filename ,$now ."/" .$filename);
 
-	
-	//$fsize = filesize('./' .$filename_zip);
-	$fsize = filesize($filename_zip);
+        $zip->addFile($filename.'.'.strtolower($format), basename($filename.'.'.strtolower($format)));
+        if($format=='SHP') {
+            $zip->addFile($filename.'.shx', basename($filename.'.shx'));
+            $zip->addFile($filename.'.dbf', basename($filename.'.dbf'));
+            $zip->addFile($filename.'.prj', basename($filename.'.prj'));
+        }
+        $zip->close();
+
+        //$fsize = filesize('./' .$filename_zip);
+        $fsize = filesize($filename_zip);
+    }
+    else {
+        //for formats that are not zipped (CSV...)
+        $fsize = filesize($filename .'.'.strtolower($format));
+    }
 
 }
 catch(Exception $e) {
@@ -157,14 +171,19 @@ catch(Exception $e) {
     header("Expires: 0");
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
     header("Cache-Control: private",false); // required for certain browsers
-    header("Content-Type: application/zip");
+    header("Content-Type: " . $ctype);
     header("Content-Disposition: attachment; filename=\"".$filename_zip."\";" );
     header("Content-Transfer-Encoding: binary");
     header("Content-Length: ".$fsize);
     ob_clean();
     flush();
 
+if ($makeZip) {
     readfile($filename_zip);
+}
+else {
+    readfile($filename .'.'.strtolower($format));
+}
 
 	//removing shp
 	if($format=='SHP') {
@@ -173,8 +192,10 @@ catch(Exception $e) {
 		unlink($filename.'.prj');
 	}
 	unlink($filename.'.'.$format);
-	
-	unlink($filename_zip); 
+
+    if (file_exists($filename_zip)) {
+            unlink($filename_zip);
+    }
 
     exit();
 
