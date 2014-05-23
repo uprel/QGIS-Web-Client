@@ -69,8 +69,8 @@ else {
 
 $now = date("Ymd_His");
 $layerAlias = normalize($layername);
-$filename = $layerAlias . '_' . $now;
-$filename_zip = $layerAlias . '_' . $now . '.zip';
+$filename = TEMP_PATH . $layerAlias . '_' . $now;
+$filename_zip = TEMP_PATH . $layerAlias . '_' . $now . '.zip';
 
 // Get project
 $project = get_project(PROJECT_PATH . $map . '.qgs');
@@ -102,16 +102,18 @@ if ((string)$layer->provider=='postgres') {
 		die ('Format not supported');
 	}
 	
-	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$filename .'.'.$format.'" "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
-
+	//setting pgclientencoding
+	//export PGCLIENTENCODING=windows-1250
+	//preveriš z echo $PGCLIENTENCODING
+	
+	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$filename .'.'.strtolower($format).'" "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
 	
 }
 else {
 	die ('only postgis layers');
 }
-	
-	
-	
+
+
 //echo (var_dump($li));	
 //echo ($conn.'</br>');
 //echo ($geom.'</br>');
@@ -132,7 +134,7 @@ try {
 
 	//$zip->addFile("./" .$filename ,$now ."/" .$filename);
 	
-	$zip->addFile($filename.'.'.$format, basename($filename.'.'.$format));
+	$zip->addFile($filename.'.'.strtolower($format), basename($filename.'.'.strtolower($format)));
 	if($format=='SHP') {
 		$zip->addFile($filename.'.shx', basename($filename.'.shx'));
 		$zip->addFile($filename.'.dbf', basename($filename.'.dbf'));
