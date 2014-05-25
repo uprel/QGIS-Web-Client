@@ -69,8 +69,18 @@ else {
 
 $now = date("Ymd_His");
 $layerAlias = normalize($layername);
-$filename = TEMP_PATH . $layerAlias . '_' . $now;
-$filename_zip = $layerAlias . '_' . $now . '.zip';
+$fileName = TEMP_PATH . $layerAlias . '_' . $now;
+$fileNameZip = $layerAlias . '_' . $now . '.zip';
+
+$server_os = php_uname('s');
+
+if($server_os=='Windows NT') {
+    $fullFileNameZip = $fileNameZip;
+    }
+else {
+    $fullFileNameZip = TEMP_PATH.$fileNameZip;
+}
+
 $ctype = "application/zip";
 $makeZip = true;
 $fsize = -1;
@@ -106,7 +116,7 @@ if ((string)$layer->provider=='postgres') {
         $format_name = $format;
         $options = "-lco SEPARATOR=SEMICOLON";
         $makeZip = false;
-        $filename_zip = $layerAlias . '_' . $now . '.csv';
+        $fileNameZip = $layerAlias . '_' . $now . '.csv';
         $ctype = "text/csv";
     }
 	else {
@@ -116,7 +126,7 @@ if ((string)$layer->provider=='postgres') {
     //setting pgclientencoding
     putenv('PGCLIENTENCODING=windows-1250');
 
-	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$filename .'.'.strtolower($format).'" ' . $options . ' "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
+	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$fileName .'.'.strtolower($format).'" ' . $options . ' "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
 
 }
 else {
@@ -139,26 +149,26 @@ try {
 
         $zip = new ZipArchive();
 
-        if ($zip->open($filename_zip, ZipArchive::CREATE)!==TRUE) {
-            exit("Cannot write <$filename_zip>\n");
+        if ($zip->open($fullFileNameZip, ZipArchive::CREATE)!==TRUE) {
+            exit("Cannot write <$fullFileNameZip>\n");
         }
 
         //$zip->addFile("./" .$filename ,$now ."/" .$filename);
 
-        $zip->addFile($filename.'.'.strtolower($format), basename($filename.'.'.strtolower($format)));
+        $zip->addFile($fileName.'.'.strtolower($format), basename($fileName.'.'.strtolower($format)));
         if($format=='SHP') {
-            $zip->addFile($filename.'.shx', basename($filename.'.shx'));
-            $zip->addFile($filename.'.dbf', basename($filename.'.dbf'));
-            $zip->addFile($filename.'.prj', basename($filename.'.prj'));
+            $zip->addFile($fileName.'.shx', basename($fileName.'.shx'));
+            $zip->addFile($fileName.'.dbf', basename($fileName.'.dbf'));
+            $zip->addFile($fileName.'.prj', basename($fileName.'.prj'));
         }
         $zip->close();
 
         //$fsize = filesize('./' .$filename_zip);
-        $fsize = filesize($filename_zip);
+        $fsize = filesize($fullFileNameZip);
     }
     else {
         //for formats that are not zipped (CSV...)
-        $fsize = filesize($filename .'.'.strtolower($format));
+        $fsize = filesize($fileName .'.'.strtolower($format));
     }
 
 }
@@ -172,29 +182,29 @@ catch(Exception $e) {
     header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
     header("Cache-Control: private",false); // required for certain browsers
     header("Content-Type: " . $ctype);
-    header("Content-Disposition: attachment; filename=\"".$filename_zip."\";" );
+    header("Content-Disposition: attachment; filename=\"".$fileNameZip."\";" );
     header("Content-Transfer-Encoding: binary");
     header("Content-Length: ".$fsize);
     ob_clean();
     flush();
 
 if ($makeZip) {
-    readfile($filename_zip);
+    readfile($fullFileNameZip);
 }
 else {
-    readfile($filename .'.'.strtolower($format));
+    readfile($fileName .'.'.strtolower($format));
 }
 
 	//removing shp
 	if($format=='SHP') {
-		unlink($filename.'.dbf');
-		unlink($filename.'.shx');
-		unlink($filename.'.prj');
+		unlink($fileName.'.dbf');
+		unlink($fileName.'.shx');
+		unlink($fileName.'.prj');
 	}
-	unlink($filename.'.'.$format);
+	unlink($fileName.'.'.$format);
 
-    if (file_exists($filename_zip)) {
-            unlink($filename_zip);
+    if (file_exists($fullFileNameZip)) {
+            unlink($fullFileNameZip);
     }
 
     exit();
