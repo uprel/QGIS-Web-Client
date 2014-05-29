@@ -366,12 +366,14 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
             {
                 xtype: 'panel',
                 id: 'BottomPanel',        
+                title: '',
                 region: 'south',
                 split: true,
                 collapsible: true,
                 collapsed: true,    
-                hidden: true,
-                height: 100 
+                hidden: false,
+                height: 300,
+                autoScroll: true
             }]
 		}];
 

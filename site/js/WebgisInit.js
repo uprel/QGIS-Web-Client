@@ -379,8 +379,7 @@ function postLoading() {
 		},{
 			text: contextOpenTable[lang],
 			//iconCls: 'calendar',
-			handler: openAttTable,
-			disabled: true
+			handler: openAttTable
 		},{
 			text: contextDataExport[lang],
 			//iconCls: 'calendar',
@@ -774,304 +773,225 @@ function postLoading() {
 	}
 
 	//navigation actions
-	if (!initialLoadDone) {
-		var myTopToolbar = Ext.getCmp('myTopToolbar');
-		//zoom box
-		var zoomBoxAction = new GeoExt.Action({
-			icon: 'gis_icons/mActionZoomBox.png',
-			id: 'navZoomBoxButton',
-			scale: 'medium',
-			control: new OpenLayers.Control.ZoomBox({
-				out: false
-			}),
-			map: geoExtMap.map,
-			tooltip: zoomRectangleTooltipString[lang],
-			tooltipType: 'qtip',
-			toggleGroup: 'mapTools',
-			enableToggle: true,
-			allowDepress: true
-		});
-		myTopToolbar.insert(0, zoomBoxAction);
-		geoExtMap.map.zoomBoxActive = false;
-		Ext.getCmp('navZoomBoxButton').on('toggle', mapToolbarHandler);
+    if (!initialLoadDone) {
+        var myTopToolbar = Ext.getCmp('myTopToolbar');
+        //zoom box
+        var zoomBoxAction = new GeoExt.Action({
+            icon: 'gis_icons/mActionZoomBox.png',
+            id: 'navZoomBoxButton',
+            scale: 'medium',
+            control: new OpenLayers.Control.ZoomBox({
+                out: false
+            }),
+            map: geoExtMap.map,
+            tooltip: zoomRectangleTooltipString[lang],
+            tooltipType: 'qtip',
+            toggleGroup: 'mapTools',
+            enableToggle: true,
+            allowDepress: true
+        });
+        myTopToolbar.insert(0, zoomBoxAction);
+        geoExtMap.map.zoomBoxActive = false;
+        Ext.getCmp('navZoomBoxButton').on('toggle', mapToolbarHandler);
 
-		var zoomToPreviousAction = new GeoExt.Action({
-			icon: 'gis_icons/mActionZoomLast.png',
-			scale: 'medium',
-			control: navHistoryCtrl.previous,
-			disabled: true,
-			tooltip: navigationHistoryBackwardTooltipString[lang],
-			tooltipType: 'qtip',
+        var zoomToPreviousAction = new GeoExt.Action({
+            icon: 'gis_icons/mActionZoomLast.png',
+            scale: 'medium',
+            control: navHistoryCtrl.previous,
+            disabled: true,
+            tooltip: navigationHistoryBackwardTooltipString[lang],
+            tooltipType: 'qtip',
             id: 'zoomLast'
-		});
-		myTopToolbar.insert(1, zoomToPreviousAction);
-		//zoom next
-		var zoomToNextAction = new GeoExt.Action({
-			icon: 'gis_icons/mActionZoomNext.png',
-			scale: 'medium',
-			control: navHistoryCtrl.next,
-			disabled: true,
-			tooltip: navigationHistoryForwardTooltipString[lang],
-			tooltipType: 'qtip',
+        });
+        myTopToolbar.insert(1, zoomToPreviousAction);
+        //zoom next
+        var zoomToNextAction = new GeoExt.Action({
+            icon: 'gis_icons/mActionZoomNext.png',
+            scale: 'medium',
+            control: navHistoryCtrl.next,
+            disabled: true,
+            tooltip: navigationHistoryForwardTooltipString[lang],
+            tooltipType: 'qtip',
             id: 'zoomNext'
-		});
-		myTopToolbar.insert(2, zoomToNextAction);
+        });
+        myTopToolbar.insert(2, zoomToNextAction);
 
-		//add QGISSearchCombo
-		if (useGeoNamesSearchBox || searchBoxQueryURL != null) {
-			myTopToolbar.insert(myTopToolbar.items.length, new Ext.Toolbar.Fill());
+        //add QGISSearchCombo
+        if (useGeoNamesSearchBox || searchBoxQueryURL != null) {
+            myTopToolbar.insert(myTopToolbar.items.length, new Ext.Toolbar.Fill());
 
-			if (useGeoNamesSearchBox) {
-				qgisSearchCombo = new GeoExt.ux.GeoNamesSearchCombo({
-					map: geoExtMap.map,
-					width: 300,
-					minChars: 2,
-					loadingText: geonamesLoadingString[lang],
-					emptyText: geonamesEmptyString[lang],
-					zoom: 14,
-					//lang: lang,
-					featureClassString: 'featureClass=P&featureClass=H&featureClass=L&featureClass=T&featureClass=V',
-					country: 'SI',
-					tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name}</h3>{adminName1}&nbsp;</div></tpl>',
-					username: geoNamesUserName
-				});
-				//disabling button for resetting search, not needed, not working
-				// var emptySearchFieldButton = new Ext.Button({
-					// scale: 'medium',
-					// icon: 'gis_icons/mActionUndo.png',
-					// tooltipType: 'qtip',
-					// tooltip: resetSearchFieldTooltipString[lang],
-					// id: 'EmptySearchField'
-				// });
-				// emptySearchFieldButton.handler = mapToolbarHandler;
-				// myTopToolbar.insert(myTopToolbar.items.length, emptySearchFieldButton);
-			} else {
-				qgisSearchCombo = new QGIS.SearchComboBox({
-					map: geoExtMap.map,
-					highlightLayerName: 'attribHighLight',
-					hasReverseAxisOrder: false, // PostGIS returns bbox' coordinates always x/y
-					width: 300,
-					searchtables: searchtables
-				});
-			}
-			myTopToolbar.insert(myTopToolbar.items.length, qgisSearchCombo);
-		}
-
-		myTopToolbar.doLayout();
-
-		//map themes panel
-		if (mapThemeSwitcherActive == true) {
-			mapThemeSwitcher = new ThemeSwitcher(Ext.getCmp('MapPanel'));
-			Ext.getCmp('mapThemeButton').show();
-		} 
-
-		function showURLParametersSearch(searchPanelConfigs) {
-			if ('query' in urlParams) {
-				// find search config for query
-				var searchConfig = null;
-				for (var i = 0; i < searchPanelConfigs.length; i++) {
-					if (urlParams.query == searchPanelConfigs[i].query) {
-						searchConfig = searchPanelConfigs[i];
-						break;
-					}
-				}
-
-				// submit search request (using URL rewriting)
-				Ext.Ajax.request({
-					url: wmsURI,
-					params: urlParams,
-					method: 'GET',
-					success: function (response) {
-						var featureInfoParser = new QGIS.FeatureInfoParser();
-						if (featureInfoParser.parseXML(response)) {
-							if (featureInfoParser.featureIds().length > 0) {
-								// select features in layer
-								thematicLayer.mergeNewParams({
-									"SELECTION": searchConfig.selectionLayer + ":" + featureInfoParser.featureIds().join(',')
-								});
-
-								// zoom to features
-								var bbox = featureInfoParser.featuresBbox();
-								geoExtMap.map.zoomToExtent(new OpenLayers.Bounds(bbox.minx, bbox.miny, bbox.maxx, bbox.maxy));
-								var scale = geoExtMap.map.getScale() * 1.1;
-								if (scale < 500) {
-									scale = 500;
-								}
-								geoExtMap.map.zoomToScale(scale);
-							}
-						}
-					}
-				});
-			};
-		};
-
-        /*
-         * Show search panel results
-         */
-        function showSearchPanelResults(searchPanelInstance, features){
-            if(features.length){
-                // Here we select where to show the search results
-                var targetComponent = null;
-                if(typeof(mapSearchPanelOutputRegion) == 'undefined'){
-                   mapSearchPanelOutputRegion = 'default';
-                }
-                // These option are for different output modes
-                var collapsible = true;
-                var autoHeight = true;
-                switch(mapSearchPanelOutputRegion){
-                    case 'right':
-                        targetComponent = Ext.getCmp('RightPanel');
-                    break;
-                    case 'bottom':
-                        targetComponent = Ext.getCmp('BottomPanel');
-                        collapsible = false; // No collapsible in bottom
-                    break;
-                    case 'popup':
-                        if(typeof(Ext.getCmp('SearchResultsPopUp')) == 'undefined'){
-                            targetComponent =  new Ext.Window(
-                            {
-                                id: 'SearchResultsPopUp',
-                                layout: 'fit',
-                                width: "80%",
-                                height: 300,
-                                modal: false,
-                                closeAction: 'hide'
-                            });
-                        }
-                        autoHeight = false; // No scrollbars if true
-                        collapsible = false; // No collapsible in popup
-                        targetComponent = Ext.getCmp('SearchResultsPopUp');
-                    break;
-                    case 'default':
-                    default:
-                        targetComponent = searchPanelInstance;
-                    break;
-                }
-                // Make sure it's shown and expanded
-                targetComponent.show();
-                targetComponent.collapsible && targetComponent.expand();
-                // Delete and re-create
-                try {
-                    Ext.getCmp('SearchPanelResultsGrid').destroy();
-                } catch(e) {
-                    // Eventually log...
-                }
-                searchPanelInstance.resultsGrid = new Ext.grid.GridPanel({
-                  id: 'SearchPanelResultsGrid',
-                  title: searchResultString[lang],
-                  collapsible: collapsible,
-                  collapsed: false,
-                  store: searchPanelInstance.store,
-                  columns: searchPanelInstance.gridColumns,
-                  autoHeight: autoHeight, // No vert. scrollbars in popup if true!!
-                  viewConfig: {
-                    forceFit: true
-                  }
+            if (useGeoNamesSearchBox) {
+                qgisSearchCombo = new GeoExt.ux.GeoNamesSearchCombo({
+                    map: geoExtMap.map,
+                    width: 300,
+                    minChars: 2,
+                    loadingText: geonamesLoadingString[lang],
+                    emptyText: geonamesEmptyString[lang],
+                    zoom: 14,
+                    //lang: lang,
+                    featureClassString: 'featureClass=P&featureClass=H&featureClass=L&featureClass=T&featureClass=V',
+                    country: 'SI',
+                    tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name}</h3>{adminName1}&nbsp;</div></tpl>',
+                    username: geoNamesUserName
                 });
-                searchPanelInstance.resultsGrid.on('rowclick', searchPanelInstance.onRowClick, searchPanelInstance);
-                targetComponent.add(searchPanelInstance.resultsGrid);
-                targetComponent.doLayout();
-                // Always make sure it's shown and expanded
-                searchPanelInstance.resultsGrid.show();
-                searchPanelInstance.resultsGrid.collapsible && searchPanelInstance.resultsGrid.expand();
+                //disabling button for resetting search, not needed, not working
+                // var emptySearchFieldButton = new Ext.Button({
+                // scale: 'medium',
+                // icon: 'gis_icons/mActionUndo.png',
+                // tooltipType: 'qtip',
+                // tooltip: resetSearchFieldTooltipString[lang],
+                // id: 'EmptySearchField'
+                // });
+                // emptySearchFieldButton.handler = mapToolbarHandler;
+                // myTopToolbar.insert(myTopToolbar.items.length, emptySearchFieldButton);
             } else {
-                // No features: shouldn't we warn the user?
-                Ext.MessageBox.alert(searchPanelTitleString[lang], searchNoRecordsFoundString[lang]);
-                try {
-                    Ext.getCmp('SearchPanelResultsGrid').destroy();
-                } catch(e) {
-                    // Eventually log...
-                }
-                searchPanelInstance.resultsGrid = null;
+                qgisSearchCombo = new QGIS.SearchComboBox({
+                    map: geoExtMap.map,
+                    highlightLayerName: 'attribHighLight',
+                    hasReverseAxisOrder: false, // PostGIS returns bbox' coordinates always x/y
+                    width: 300,
+                    searchtables: searchtables
+                });
             }
-            return true;
+            myTopToolbar.insert(myTopToolbar.items.length, qgisSearchCombo);
         }
 
-		//search panel and URL search parameters
-		//Uros: bind to projectData
-		var searchPanelConfigs = projectData.search;	//[];
-		// if (wmsMapName in mapSearchPanelConfigs) {
-			// searchPanelConfigs = mapSearchPanelConfigs[wmsMapName];
-		// }
-		if (searchPanelConfigs.length > 0) {
-			// add QGIS search panels
-			var searchTabPanel = Ext.getCmp('SearchTabPanel');
-			for (var i = 0; i < searchPanelConfigs.length; i++) {
-				var panel = new QGIS.SearchPanel(searchPanelConfigs[i]);
-				panel.on("featureselected", showFeatureSelected);
-				panel.on("featureselectioncleared", clearFeatureSelected);
-				panel.on("beforesearchdataloaded", showSearchPanelResults);
+        myTopToolbar.doLayout();
+
+        //map themes panel
+        if (mapThemeSwitcherActive == true) {
+            mapThemeSwitcher = new ThemeSwitcher(Ext.getCmp('MapPanel'));
+            Ext.getCmp('mapThemeButton').show();
+        }
+
+        function showURLParametersSearch(searchPanelConfigs) {
+            if ('query' in urlParams) {
+                // find search config for query
+                var searchConfig = null;
+                for (var i = 0; i < searchPanelConfigs.length; i++) {
+                    if (urlParams.query == searchPanelConfigs[i].query) {
+                        searchConfig = searchPanelConfigs[i];
+                        break;
+                    }
+                }
+
+                // submit search request (using URL rewriting)
+                Ext.Ajax.request({
+                    url: wmsURI,
+                    params: urlParams,
+                    method: 'GET',
+                    success: function (response) {
+                        var featureInfoParser = new QGIS.FeatureInfoParser();
+                        if (featureInfoParser.parseXML(response)) {
+                            if (featureInfoParser.featureIds().length > 0) {
+                                // select features in layer
+                                thematicLayer.mergeNewParams({
+                                    "SELECTION": searchConfig.selectionLayer + ":" + featureInfoParser.featureIds().join(',')
+                                });
+
+                                // zoom to features
+                                var bbox = featureInfoParser.featuresBbox();
+                                geoExtMap.map.zoomToExtent(new OpenLayers.Bounds(bbox.minx, bbox.miny, bbox.maxx, bbox.maxy));
+                                var scale = geoExtMap.map.getScale() * 1.1;
+                                if (scale < 500) {
+                                    scale = 500;
+                                }
+                                geoExtMap.map.zoomToScale(scale);
+                            }
+                        }
+                    }
+                });
+            }
+            ;
+        };
+
+
+
+        //search panel and URL search parameters
+        //Uros: bind to projectData
+        var searchPanelConfigs = projectData.search;	//[];
+        // if (wmsMapName in mapSearchPanelConfigs) {
+        // searchPanelConfigs = mapSearchPanelConfigs[wmsMapName];
+        // }
+        if (searchPanelConfigs.length > 0) {
+            // add QGIS search panels
+            var searchTabPanel = Ext.getCmp('SearchTabPanel');
+            for (var i = 0; i < searchPanelConfigs.length; i++) {
+                var panel = new QGIS.SearchPanel(searchPanelConfigs[i]);
+                panel.gridLocation = 'default';
+                panel.gridTitle = searchResultString[lang];
+                panel.gridResults = simpleWmsSearchMaxResults;
+                panel.on("featureselected", showFeatureSelected);
+                panel.on("featureselectioncleared", clearFeatureSelected);
+                panel.on("beforesearchdataloaded", showSearchPanelResults);
                 // Just for debugging...
-				// panel.on("afterdsearchdataloaded", function(e){console.log(e);});
-				searchTabPanel.add(panel);
-			}
-			searchTabPanel.setActiveTab(0);
+                // panel.on("afterdsearchdataloaded", function(e){console.log(e);});
+                searchTabPanel.add(panel);
+            }
+            searchTabPanel.setActiveTab(0);
 
-			// show search from URL parameters
-			showURLParametersSearch(searchPanelConfigs);
-		} else {
-			// hide search panel
-			var searchPanel = Ext.getCmp('SearchPanel');
-			searchPanel.removeAll();
-			searchPanel.hide();
-		}
+            // show search from URL parameters
+            showURLParametersSearch(searchPanelConfigs);
+        } else {
+            // hide search panel
+            var searchPanel = Ext.getCmp('SearchPanel');
+            searchPanel.removeAll();
+            searchPanel.hide();
+        }
 
-		//update layout of left panel and adds a listener to automatically adjust layout after resizing
-		var leftPanel = Ext.getCmp('LeftPanel');
-		leftPanel.doLayout();
-		leftPanel.addListener('resize', function (myPanel, adjWidth, adjHeight, rawWidth, rawHeight) {
-			myPanel.items.each(function (item, index, length) {
-				item.width = adjWidth;
-			});
-			myPanel.doLayout();
-		});
+        //update layout of left panel and adds a listener to automatically adjust layout after resizing
+        var leftPanel = Ext.getCmp('LeftPanel');
+        leftPanel.doLayout();
+        leftPanel.addListener('resize', function (myPanel, adjWidth, adjHeight, rawWidth, rawHeight) {
+            myPanel.items.each(function (item, index, length) {
+                item.width = adjWidth;
+            });
+            myPanel.doLayout();
+        });
 
-		//measure-controls (distance and area)
-		var styleMeasureControls = new OpenLayers.Style();
-		styleMeasureControls.addRules([
-		new OpenLayers.Rule({
-			symbolizer: sketchSymbolizersMeasureControls
-		})]);
-		var styleMapMeasureControls = new OpenLayers.StyleMap({
-			"default": styleMeasureControls
-		});
+        //measure-controls (distance and area)
+        var styleMeasureControls = new OpenLayers.Style();
+        styleMeasureControls.addRules([
+            new OpenLayers.Rule({
+                symbolizer: sketchSymbolizersMeasureControls
+            })]);
+        var styleMapMeasureControls = new OpenLayers.StyleMap({
+            "default": styleMeasureControls
+        });
 
-		measureControls = {
-			line: new OpenLayers.Control.Measure(
-			OpenLayers.Handler.Path, {
-				persist: true,
-				handlerOptions: {
-					layerOptions: {
-						styleMap: styleMapMeasureControls
-					}
-				}
-			}),
-			polygon: new OpenLayers.Control.Measure(
-			OpenLayers.Handler.Polygon, {
-				persist: true,
-				handlerOptions: {
-					layerOptions: {
-						styleMap: styleMapMeasureControls
-					}
-				}
-			})
-		};
+        measureControls = {
+            line: new OpenLayers.Control.Measure(
+                OpenLayers.Handler.Path, {
+                    persist: true,
+                    handlerOptions: {
+                        layerOptions: {
+                            styleMap: styleMapMeasureControls
+                        }
+                    }
+                }),
+            polygon: new OpenLayers.Control.Measure(
+                OpenLayers.Handler.Polygon, {
+                    persist: true,
+                    handlerOptions: {
+                        layerOptions: {
+                            styleMap: styleMapMeasureControls
+                        }
+                    }
+                })
+        };
 
-		var control;
-		for (var key in measureControls) {
-			control = measureControls[key];
-			control.events.on({
-				"measure": handleMeasurements,
-				"measurepartial": handleMeasurements
-			});
-			control.setImmediate(true);
-			control.geodesic = useGeodesicMeasurement;
-			geoExtMap.map.addControl(control);
-		}
-	}
-	else {
-		//todo see if we need to change something on project reload in this block, e.g. search panel
-	}
+        var control;
+        for (var key in measureControls) {
+            control = measureControls[key];
+            control.events.on({
+                "measure": handleMeasurements,
+                "measurepartial": handleMeasurements
+            });
+            control.setImmediate(true);
+            control.geodesic = useGeodesicMeasurement;
+            geoExtMap.map.addControl(control);
+        }
+    }
 
 	leafsChangeFunction = function () {
 		//now collect all selected queryable layers for WMS request
@@ -1439,6 +1359,114 @@ function postLoading() {
 	// run the function in the Customizations.js
 	customAfterMapInit();
 }
+
+/*
+ * Show search panel results
+ */
+function showSearchPanelResults(searchPanelInstance, features) {
+    if (features.length) {
+        // Here we select where to show the search results
+        var targetComponent = null;
+        //if (typeof(mapSearchPanelOutputRegion) == 'undefined') {
+        //    mapSearchPanelOutputRegion = 'default';
+        //}
+
+
+        //test uros
+        //alert(searchPanelInstance.title);
+
+
+
+        // These option are for different output modes
+        var collapsible = true;
+        var autoHeight = true;
+        switch (searchPanelInstance.gridLocation) {
+            case 'right':
+                targetComponent = Ext.getCmp('RightPanel');
+                break;
+            case 'bottom':
+                targetComponent = Ext.getCmp('BottomPanel');
+                collapsible = false; // No collapsible in bottom
+                break;
+            case 'popup':
+                if (typeof(Ext.getCmp('SearchResultsPopUp')) == 'undefined') {
+                    targetComponent = new Ext.Window(
+                        {
+                            id: 'SearchResultsPopUp',
+                            layout: 'fit',
+                            width: "80%",
+                            height: 300,
+                            modal: false,
+                            closeAction: 'hide'
+                        });
+                }
+                autoHeight = false; // No scrollbars if true
+                collapsible = false; // No collapsible in popup
+                targetComponent = Ext.getCmp('SearchResultsPopUp');
+                break;
+            case 'default':
+            default:
+                targetComponent = searchPanelInstance;
+                break;
+        }
+        // Make sure it's shown and expanded
+        targetComponent.show();
+        targetComponent.collapsible && targetComponent.expand();
+        // Delete and re-create
+        try {
+            Ext.getCmp('SearchPanelResultsGrid').destroy();
+        } catch (e) {
+            // Eventually log...
+        }
+
+        //test if we need paging (not actual size of results, just initial settings
+        var pagingConfig = {};
+        if (searchPanelInstance.gridResults>searchPanelInstance.gridResultsPageSize) {
+            pagingConfig = new Ext.PagingToolbar({
+                pageSize: searchPanelInstance.gridResultsPageSize,
+                store: searchPanelInstance.store,
+                displayInfo: false
+                //displayMsg: 'Displaying topics {0} - {1} of {2}',
+                //emptyMsg: "No topics to display",
+
+            });
+
+        }
+
+        searchPanelInstance.resultsGrid = new Ext.grid.GridPanel({
+            id: 'SearchPanelResultsGrid',
+            //title: searchPanelInstance.gridTitle,
+            collapsible: collapsible,
+            collapsed: false,
+            store: searchPanelInstance.store,
+            columns: searchPanelInstance.gridColumns,
+            autoHeight: autoHeight, // No vert. scrollbars in popup if true!!
+            viewConfig: {
+                forceFit: true
+            },
+            // paging bar on the bottom
+            bbar: pagingConfig
+        });
+        searchPanelInstance.resultsGrid.on('rowclick', searchPanelInstance.onRowClick, searchPanelInstance);
+        targetComponent.add(searchPanelInstance.resultsGrid);
+        targetComponent.doLayout();
+        // Always make sure it's shown and expanded
+        searchPanelInstance.resultsGrid.show();
+        searchPanelInstance.resultsGrid.collapsible && searchPanelInstance.resultsGrid.expand();
+    } else {
+        // No features: shouldn't we warn the user?
+        Ext.MessageBox.alert(searchPanelTitleString[lang], searchNoRecordsFoundString[lang]);
+        try {
+            Ext.getCmp('SearchPanelResultsGrid').destroy();
+        } catch (e) {
+            // Eventually log...
+        }
+        searchPanelInstance.resultsGrid = null;
+    }
+    return true;
+}
+
+
 
 function getVisibleLayers(visibleLayers, currentNode){
   while (currentNode != null){
@@ -2217,10 +2245,67 @@ function exportData(layer,format) {
 	// , null, {test:'hello'});
 }
 
-function openAttTable(item) {
+function openAttTable() {
 	var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
-	Ext.Msg.alert('Info',myLayerName);
 
 
+    var layer = new QGIS.SearchPanel({
+        id: 'layerData',
+        useWmsRequest: true,
+        queryLayer: myLayerName,
+        gridColumns: getLayerAttributes(myLayerName),
+        gridLocation: 'bottom',
+        gridTitle: myLayerName,
+        gridResults: 2000,
+        gridResultsPageSize: 20,
+        selectionLayer: myLayerName,
+        formItems: [],
+        doZoomToExtent: true
 
+    });
+
+    Ext.getCmp('BottomPanel').setTitle(layer.gridTitle,'x-cols-icon');
+    Ext.get('BottomPanel').setStyle('padding-top', '2px');
+
+    layer.onSubmit();
+
+    layer.on("featureselected", showFeatureSelected);
+    layer.on("featureselectioncleared", clearFeatureSelected);
+    layer.on("beforesearchdataloaded", showSearchPanelResults);
+
+}
+
+/**
+ *
+ * @param layer
+ * @returns {{}}
+ */
+function getLayerAttributes(layer) {
+
+    var ret = [];
+
+    for (var i=0;i<wmsLoader.layerProperties[layer].attributes.length;i++) {
+        ret[i] = {};
+        attribute = wmsLoader.layerProperties[layer].attributes[i];
+        ret[i].header = attribute.name;
+        ret[i].dataIndex = attribute.name;
+        ret[i].menuDisabled = false;
+        ret[i].sortable = true;
+        if(attribute.type=='double') {
+            ret[i].xtype = 'numbercolumn';
+            ret[i].format = '0.000,00/i';
+            ret[i].align = 'right';
+            //no effect
+            //ret[i].style = 'text-align:left'
+        }
+        if(attribute.type=='int') {
+            ret[i].xtype = 'numbercolumn';
+            ret[i].format = '000';
+            ret[i].align = 'right';
+        }
+    }
+
+    ret.unshift(new Ext.ux.grid.RowNumberer({width: 32}));
+
+    return ret;
 }

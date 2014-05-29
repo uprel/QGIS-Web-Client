@@ -674,6 +674,14 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
   */
   selectionZoom: 4,
 
+  /**
+  * position of result grid (empty=default=left side, for other values look mapSearchPanelOutputRegion
+  */
+  gridLocation: '',
+
+  gridTitle: '',
+  gridResults: 100,
+  gridResultsPageSize: 20,
 
   constructor: function (config) {
     config = config || {};
@@ -681,6 +689,14 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
     config.queryLayer = config.queryLayer || '';
     config.formItems = config.formItems || [];
     config.gridColumns = config.gridColumns || [];
+    config.gridLocation = config.gridLocation || '';
+    config.gridTitle = config.gridTitle || '';
+    if (config.gridResults == null) {
+        config.gridResults = 100;
+    }
+    if (config.gridResultsPageSize == null) {
+        config.gridResultsPageSize = 20;
+    }
     config.selectionLayer = config.selectionLayer || '';
     if (config.selectionZoom == null) {
       config.selectionZoom = 4;
@@ -754,7 +770,9 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
     }
     this.fireEvent("featureselectioncleared");
     this.fireEvent("searchformsubmitted");
-    this.el.mask(pleaseWaitString[lang], 'x-mask-loading');
+
+      //TODO uros
+      //this.el.mask(pleaseWaitString[lang], 'x-mask-loading');
     if (this.useWmsRequest) {
       this.submitGetFeatureInfo();
     } else {
@@ -792,7 +810,7 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
           'REQUEST': 'GetFeatureInfo',
           'LAYERS': this.queryLayer,
           'QUERY_LAYERS': this.queryLayer,
-          'FEATURE_COUNT': (typeof simpleWmsSearchMaxResults != 'undefined' ? simpleWmsSearchMaxResults : 10),
+          'FEATURE_COUNT': this.gridResults,
           'INFO_FORMAT': 'text/xml',
           'SRS': authid,
           'FILTER': filter
@@ -832,13 +850,29 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
       if (this.store == null) {
         // create store
         var storeFields = [];
-        var featureFields = this.featureInfoParser.featureFields();
+        //manually add field feature_id and bbox since they are not in wmsLoader...
+        storeFields.push({name: 'feature_id'});
+
+        var featureFields = wmsLoader.layerProperties[this.queryLayer].attributes;
         for (var i=0; i<featureFields.length; i++) {
-          storeFields.push({name: featureFields[i]});
+            var fieldType = featureFields[i].type;
+            if(fieldType=='int' || fieldType=='date' || fieldType=='boolean') {
+                storeFields.push({name: featureFields[i].name,type:fieldType});
+            }
+            else {
+                if (fieldType == 'double') {
+                    storeFields.push({name: featureFields[i].name, type: 'float'});
+                } else {
+                    storeFields.push({name: featureFields[i].name});
+                }
+            }
         }
-        this.store = new Ext.data.ArrayStore({
+        storeFields.push({name: 'bbox'});
+
+        this.store = new Ext.ux.data.PagingArrayStore({
           idIndex: 0,
-          fields: storeFields
+          fields: storeFields,
+          lastOptions: {params: {start: 0, limit: this.gridResultsPageSize}}
         });
 
       }
@@ -846,7 +880,8 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
       // show results, firing events: see Wegbisinit.js
       this.fireEvent('beforesearchdataloaded', this, features);
       this.store.loadData(features, false);
-      this.el.unmask();
+//TODO      
+//this.el.unmask();
 
       if (destroyStore) {
         this.store = null;

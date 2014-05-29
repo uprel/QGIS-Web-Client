@@ -1877,7 +1877,7 @@ contextOpenTable["uk"] = "Open attribute table"; //FIXME
 contextOpenTable["hu"] = "Open attribute table"; //FIXME
 contextOpenTable["ro"] = "Open attribute table"; //FIXME
 contextOpenTable["ru"] = "Open attribute table"; //FIXME
-contextOpenTable["si"] = "Prikaz opisnih podatkov sloja"; //FIXME
+contextOpenTable["si"] = "Prikaz opisnih podatkov sloja";
 contextOpenTable["nl"] = "Open attribute table"; //FIXME
 contextOpenTable["pl"] = "Open attribute table"; //FIXME
 
@@ -1892,7 +1892,7 @@ contextDataExport["uk"] = "Export layer to..."; //FIXME
 contextDataExport["hu"] = "Export layer to..."; //FIXME
 contextDataExport["ro"] = "Export layer to..."; //FIXME
 contextDataExport["ru"] = "Export layer to..."; //FIXME
-contextDataExport["si"] = "Izvoz sloja v..."; //FIXME
+contextDataExport["si"] = "Izvoz sloja v...";
 contextDataExport["nl"] = "Export layer to..."; //FIXME
 contextDataExport["pl"] = "Export layer to..."; //FIXME
 
