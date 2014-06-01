@@ -866,13 +866,13 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
         for (var i=0; i<featureFields.length; i++) {
             var fieldType = featureFields[i].type;
             if(fieldType=='int' || fieldType=='date' || fieldType=='boolean') {
-                storeFields.push({name: validateFieldName(featureFields[i].name),type:fieldType});
+                storeFields.push({name: featureFields[i].name,type:fieldType});
             }
             else {
                 if (fieldType == 'double') {
-                    storeFields.push({name: validateFieldName(featureFields[i].name), type: 'float'});
+                    storeFields.push({name: featureFields[i].name, type: 'float'});
                 } else {
-                    storeFields.push({name: validateFieldName(featureFields[i].name)});
+                    storeFields.push({name: featureFields[i].name});
                 }
             }
         }
