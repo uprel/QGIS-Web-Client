@@ -11,7 +11,7 @@ else {
 }
 
 var useGetProjectSettings = true;
-var showLayerOrderTab = true;
+var showLayerOrderTab = false;
 var grayLayerNameWhenOutsideScale = true;
 var showMetaDataInLegend = true;
 var enableHoverPopup = false;

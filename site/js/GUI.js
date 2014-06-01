@@ -154,7 +154,8 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 						xtype: 'panel',
 						title: searchPanelTitleString[lang],
 						id: 'SearchPanel',
-						border: false,
+                        //iconCls: 'x-cols-icon',
+                        border: false,
 						frame: false,
 						items: [{
 							xtype: 'tabpanel',
@@ -165,23 +166,24 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 						}]
 					}, {
 						xtype: 'panel',
-						title: mapPanelTitleString[lang],
+						title: layerTreeTitleString[lang],  //mapPanelTitleString[lang],
 						layout: 'border',
 						id: 'leftPanelMap',
+                        //iconCls: 'x-cols-icon',
 						border: false,
 						frame: false,
 						items: [{
 							xtype: 'treepanel',
 							border: false,
 							frame: false,
-							title: layerTreeTitleString[lang],
+							title: '', //layerTreeTitleString[lang],
 							height: 159,
 							split: true,
 							region: 'center',
-							collapsible: true,
+							collapsible: false,
 							rootVisible: false,
-							autoScroll: true,
-							containerScroll: true,
+							//autoScroll: true,
+							//containerScroll: true,
 							cls: 'x-tree-noicon',
 							id: 'LayerTree',
 							root: {
@@ -239,11 +241,13 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 							tooltipType: 'qtip',
 							iconCls: '',
 							scale: 'medium',
-							id: 'IdentifyTool'
+							id: 'IdentifyTool',
+                            hidden:true
 						}, {
 							xtype: 'tbtext',
 							text: objectIdentificationTextLabel[lang],
-                            id: 'ObjectIdentificationText'
+                            id: 'ObjectIdentificationText',
+                            hidden: true
 						}, {
 							xtype: 'combo',
 							width: 120,
@@ -252,10 +256,11 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 							mode: 'local',
 							displayField: 'name',
 							triggerAction: 'all',
-							id: 'ObjectIdentificationModeCombo'
-						}, {
-							xtype: 'tbseparator',
-                            id: 'separator2'
+							id: 'ObjectIdentificationModeCombo',
+                            hidden: true
+						//}, {
+						//	xtype: 'tbseparator',
+                        //    id: 'separator2'
 						}, {
 							xtype: 'button',
 							enableToggle: true,
@@ -356,24 +361,23 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
             {
                 xtype: 'panel',
                 id: 'RightPanel',
-                region: 'east',                
+                region: 'east',
                 split: true,
                 collapsible: true,
-                collapsed: true,    
+                collapsed: true,
                 hidden: true,
                 width: 200
             },
             {
-                xtype: 'panel',
-                id: 'BottomPanel',        
+                xtype: 'tabpanel',
+                id: 'BottomPanel',
                 title: '',
                 region: 'south',
                 split: true,
                 collapsible: true,
-                collapsed: true,    
+                collapsed: true,
                 hidden: false,
-                height: 300,
-                autoScroll: true
+                height: 300
             }]
 		}];
 

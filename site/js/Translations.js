@@ -1896,6 +1896,20 @@ contextDataExport["si"] = "Izvoz sloja v...";
 contextDataExport["nl"] = "Export layer to..."; //FIXME
 contextDataExport["pl"] = "Export layer to..."; //FIXME
 
+var contextUseExtent = new Array();
+contextUseExtent["en"] = "Use current map extent";
+contextUseExtent["es"] = "Use current map extent"; //FIXME
+contextUseExtent["de"] = "Use current map extent"; //FIXME
+contextUseExtent["fr"] = "Use current map extent"; //FIXME
+contextUseExtent["it"] = "Use current map extent";
+contextUseExtent["pt_PT"] = "Use current map extent"; //FIXME
+contextUseExtent["uk"] = "Use current map extent"; //FIXME
+contextUseExtent["hu"] = "Use current map extent"; //FIXME
+contextUseExtent["ro"] = "Use current map extent"; //FIXME
+contextUseExtent["ru"] = "Use current map extent"; //FIXME
+contextUseExtent["si"] = "Uporabi trenutno območje";
+contextUseExtent["nl"] = "Use current map extent"; //FIXME
+contextUseExtent["pl"] = "Use current map extent"; //FIXME
 /***********************
 Error Messages
 ***********************/
