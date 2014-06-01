@@ -176,7 +176,7 @@ Ext.extend(QGIS.WMSCapabilitiesLoader, GeoExt.tree.WMSCapabilitiesLoader, {
           },
           "Attribute": function(node, obj) {
             var attribute = {
-              name: node.getAttribute("name"),
+              name: validateFieldName(node.getAttribute("name")),
               type: node.getAttribute("type"),
               precision: parseInt(node.getAttribute("precision")),
               length: parseInt(node.getAttribute("length")),
@@ -274,6 +274,15 @@ Ext.extend(QGIS.WMSCapabilitiesLoader, GeoExt.tree.WMSCapabilitiesLoader, {
   }
 });
 
+/**
+ * Remove dot from field name
+ * @param name
+ */
+function validateFieldName(name) {
+    var str='';
+    str=name.replace('.','');
+    return str;
+}
 
 /* ************************** QGIS.PrintProvider ************************** */
 // extends GeoExt.data.PrintProvider
