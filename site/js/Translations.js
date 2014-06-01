@@ -639,7 +639,7 @@ backgroundLayerTitleString["uk"] = "Background Layers";
 backgroundLayerTitleString["hu"] = "Background Layers";
 backgroundLayerTitleString["ro"] = "Straturi de Background ";
 backgroundLayerTitleString["ru"] = "Background Layers";
-backgroundLayerTitleString["si"] = "Podlage";
+backgroundLayerTitleString["si"] = "PODLAGE";
 backgroundLayerTitleString["nl"] = "Achtergrondlagen";
 backgroundLayerTitleString["pl"] = "Warstwy podkładowe";
 

@@ -126,7 +126,9 @@ if ((string)$layer->provider=='postgres') {
     //setting pgclientencoding
     putenv('PGCLIENTENCODING=windows-1250');
 
-	$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$fileName .'.'.strtolower($format).'" ' . $options . ' "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
+    $mycmd = OGR2OGR . ' -f "'.$format_name.'" "'.$fileName .'.'.strtolower($format).'" ' . $options . ' "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
+
+    //$mycmd = OGR2OGR . ' -s_srs EPSG:3857 -t_srs EPSG:2170 -f "'.$format_name.'" "'.$fileName .'.'.strtolower($format).'" ' . $options . ' "'.$conn.'" -sql "SELECT * FROM '.$table.' WHERE '.$geom.' && ST_MakeEnvelope(' .$xmin .', ' .$ymin .', ' .$xmax .', ' .$ymax .', ' .$srid .')" -progress';
 
 }
 else {

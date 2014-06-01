@@ -377,6 +377,7 @@ function postLoading() {
             iconCls: 'x-zoom-icon',
             handler: zoomToLayerExtent
         },{
+            id: 'contextOpenTable',
             text: contextOpenTable[lang],
             iconCls: 'x-table-icon',
             handler: openAttTable
@@ -2245,6 +2246,14 @@ function onItemCheck(item, checked){
 
 // Show the menu on right click of the leaf node of the layerTree object
 function contextMenuHandler(node) {
+    //disable option for opentable if layer is not queryable
+    var queryable = true;
+    queryable = wmsLoader.layerProperties[node.attributes.text].queryable;
+    var contTable = Ext.getCmp('contextOpenTable');
+    if (queryable)
+        contTable.setDisabled(false);
+    else
+        contTable.setDisabled(true);
     node.select();
     menuC.show ( node.ui.getAnchor());
 }
@@ -2252,7 +2261,7 @@ function contextMenuHandler(node) {
 
 function exportData(layer,format) {
 
-    //current view is used as bonding box for exporting data
+    //current view is used as bounding box for exporting data
     var bbox = geoExtMap.map.calculateBounds();
     //Ext.Msg.alert('Info',layer+' ' + bbox);
 
