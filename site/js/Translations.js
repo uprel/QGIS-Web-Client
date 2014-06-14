@@ -643,6 +643,22 @@ backgroundLayerTitleString["si"] = "PODLAGE";
 backgroundLayerTitleString["nl"] = "Achtergrondlagen";
 backgroundLayerTitleString["pl"] = "Warstwy podkładowe";
 
+//title of external layers
+var externalLayerTitleString = new Array();
+externalLayerTitleString["en"] = "External Layers";
+externalLayerTitleString["es"] = "External Layers"; //FIXME
+externalLayerTitleString["de"] = "External Layers"; //FIXME
+externalLayerTitleString["fr"] = "External Layers"; //FIXME
+externalLayerTitleString["it"] = "External Layers"; //FIXME
+externalLayerTitleString["pt_PT"] = "External Layers"; //FIXME
+externalLayerTitleString["uk"] = "External Layers"; //FIXME
+externalLayerTitleString["hu"] = "External Layers"; //FIXME
+externalLayerTitleString["ro"] = "External Layers"; //FIXME
+externalLayerTitleString["ru"] = "External Layers"; //FIXME
+externalLayerTitleString["si"] = "ZUNANJI SLOJI";
+externalLayerTitleString["nl"] = "External Layers"; //FIXME
+externalLayerTitleString["pl"] = "External Layers"; //FIXME
+
 //title of layer order panel
 var layerOrderPanelTitleString = new Array();
 layerOrderPanelTitleString["en"] = "Layer order";
@@ -1670,6 +1686,22 @@ showHelpTooltipString["si"] = "pomoč";
 showHelpTooltipString["nl"] = "Toon Help";
 showHelpTooltipString["pl"] = "Pokaż pomoc";
 
+//Show location
+var showLocationTooltipString = new Array();
+showLocationTooltipString["en"] = "Show Location";
+showLocationTooltipString["es"] = "Show Location";  //FIXME
+showLocationTooltipString["de"] = "Show Location";  //FIXME
+showLocationTooltipString["fr"] = "Show Location";  //FIXME
+showLocationTooltipString["it"] = "Show Location";  //FIXME
+showLocationTooltipString["pt_PT"] = "Show Location";  //FIXME
+showLocationTooltipString["uk"] = "Show Location";  //FIXME
+showLocationTooltipString["hu"] = "Show Location";  //FIXME
+showLocationTooltipString["ro"] = "Show Location";  //FIXME
+showLocationTooltipString["ru"] = "Show Location";  //FIXME
+showLocationTooltipString["si"] = "prikaz lokacije";
+showLocationTooltipString["nl"] = "Show Location";  //FIXME
+showLocationTooltipString["pl"] = "Show Location";  //FIXME
+
 //Geonames loading string
 var geonamesLoadingString = new Array();
 geonamesLoadingString["en"] = "Search in Geonames...";
@@ -1698,7 +1730,7 @@ geonamesEmptyString["uk"] = "Пошук місць у Геоданих";
 geonamesEmptyString["hu"] = "Keresés a térképen";
 geonamesEmptyString["ro"] = "Caută locația în Geonames";
 geonamesEmptyString["ru"] = "Поиск местоположения в геоданных";
-geonamesEmptyString["si"] = "hitro iskanje lokacije";
+geonamesEmptyString["si"] = "hitro iskanje";
 geonamesEmptyString["nl"] = "Zoek locatie in Geonames";
 geonamesEmptyString["pl"] = "Wyszukaj lokację w Geonames";
 

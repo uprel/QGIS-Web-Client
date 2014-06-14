@@ -195,7 +195,7 @@ function postLoading() {
     //set root node to active layer of layertree
     layerTree.selectPath(layerTree.root.firstChild.getPath());
 
-    //uros TODO check this comment out
+    //TODO UROS check permalinkparams comment out
     //applyPermalinkParams();
 
     //now set all visible layers and document/toolbar title
@@ -418,7 +418,7 @@ function postLoading() {
                 }
                 allLayers.push(wmsLoader.layerTitleNameMapping[n.text]);
 
-                // add the "Zoom To Layer Extent" context menu
+                // add the context menu
                 n.on ('contextMenu', contextMenuHandler);
             }
             else {
@@ -544,7 +544,8 @@ function postLoading() {
             frame: false,
             border: false,
             zoom: 1.6,
-            layers: baseLayers.concat([
+            layers: baseLayers.concat(
+                extraLayers.concat([
                 thematicLayer = new OpenLayers.Layer.WMS(layerTree.root.firstChild.text,
                     wmsURI, {
                         layers: selectedLayers.join(","),
@@ -563,7 +564,9 @@ function postLoading() {
                 featureInfoHighlightLayer = new OpenLayers.Layer.Vector("featureInfoHighlight", {
                     isBaseLayer: false,
                     styleMap: styleMapHighLightLayer
-                })]),
+                })
+                ])
+                ),
             map: MapOptions,
             id: "geoExtMapPanel",
             width: MapPanelRef.getInnerWidth(),
@@ -672,6 +675,10 @@ function postLoading() {
 
         //geoExtMap.map.addControl(new OpenLayers.Control.PanZoomBar({zoomWorldIcon:true,forceFixedZoomLevel:false}));
         geoExtMap.map.addControl(new OpenLayers.Control.Zoom());
+
+        //for debuggin TODO UROS REMOVE THIS
+        //to ne dela verjetno zato ker imam custom openlayers build in je mogoče to šlo ven
+        //geoExtMap.map.addControl(new OpenLayers.Control.LayerSwitcher({'ascending':false}));
 
         //coordinate display
         coordinateTextField = Ext.getCmp('CoordinateTextField')
@@ -830,6 +837,104 @@ function postLoading() {
         });
         myTopToolbar.insert(3, zoomToNextAction);
 
+        //geolocate control
+        var geoLocateAction = new GeoExt.Action({
+            icon: 'gis_icons/mActionLocate.png',
+            id: 'geoLocate',
+            scale: 'medium',
+            control: new OpenLayers.Control.Geolocate({
+                    bind: false,
+                    geolocationOptions: {
+                        enableHighAccuracy: false,
+                        maximumAge: 0,
+                        timeout: 7000
+                    }
+            }),
+            map: geoExtMap.map,
+            tooltip: showLocationTooltipString[lang],
+            tooltipType: 'qtip',
+            handler: mapToolbarHandler
+        });
+        myTopToolbar.insert(100, geoLocateAction);
+
+        //geolocation additional stuff
+        //TODO UROS CLEAN UP
+        var pulsate = function(feature) {
+            var point = feature.geometry.getCentroid(),
+                bounds = feature.geometry.getBounds(),
+                radius = Math.abs((bounds.right - bounds.left)/2),
+                count = 0,
+                grow = 'up';
+
+            var resize = function(){
+                if (count>16) {
+                    clearInterval(window.resizeInterval);
+                }
+                var interval = radius * 0.03;
+                var ratio = interval/radius;
+                switch(count) {
+                    case 4:
+                    case 12:
+                        grow = 'down'; break;
+                    case 8:
+                        grow = 'up'; break;
+                }
+                if (grow!=='up') {
+                    ratio = - Math.abs(ratio);
+                }
+                feature.geometry.resize(1+ratio, point);
+                featureInfoHighlightLayer.drawFeature(feature);
+                count++;
+            };
+            window.resizeInterval = window.setInterval(resize, 50, point, radius);
+        };
+        var style = {
+            fillColor: '#000',
+            fillOpacity: 0.1,
+            strokeWidth: 0
+        };
+
+        var firstGeolocation = true;
+
+        geoLocateAction.control.events.register("locationupdated",geoLocateAction.control,function(e) {
+            //TODO UROS PAZI TO
+            featureInfoHighlightLayer.removeAllFeatures();
+            var circle = new OpenLayers.Feature.Vector(
+                OpenLayers.Geometry.Polygon.createRegularPolygon(
+                    new OpenLayers.Geometry.Point(e.point.x, e.point.y),
+                    e.position.coords.accuracy/2,
+                    40,
+                    0
+                ),
+                {},
+                style
+            );
+            featureInfoHighlightLayer.addFeatures([
+                new OpenLayers.Feature.Vector(
+                    e.point,
+                    {},
+                    {
+                        graphicName: 'cross',
+                        strokeColor: '#f00',
+                        strokeWidth: 2,
+                        fillOpacity: 0,
+                        pointRadius: 10
+                    }
+                ),
+                circle
+            ]);
+            if (firstGeolocation) {
+                geoExtMap.map.zoomToExtent(featureInfoHighlightLayer.getDataExtent());
+                pulsate(circle);
+                //firstGeolocation = false;
+                geoLocateAction.control.bind = true;
+            }
+        });
+        geoLocateAction.control.events.register("locationfailed",this,function() {
+            OpenLayers.Console.log('Location detection failed');
+        });
+
+
         //add QGISSearchCombo
         if (useGeoNamesSearchBox || searchBoxQueryURL != null) {
             myTopToolbar.insert(myTopToolbar.items.length, new Ext.Toolbar.Fill());
@@ -844,7 +949,7 @@ function postLoading() {
                     zoom: 14,
                     //lang: lang,
                     featureClassString: 'featureClass=P&featureClass=H&featureClass=L&featureClass=T&featureClass=V',
-                    country: 'SI',
+                    countryString: 'country=SI&',
                     tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name}</h3>{adminName1}&nbsp;</div></tpl>',
                     username: geoNamesUserName
                 });
@@ -1074,6 +1179,7 @@ function postLoading() {
         }
 
         // switch backgroundLayers
+        //TODO UROS This is not OK, we need radio buttons
         if (enableBGMaps) {
             var checkedBackgroundNodes = [];
             var newVisibleBaseLayer = null;
@@ -1111,6 +1217,30 @@ function postLoading() {
     //add listeners for layertree
     layerTree.addListener('leafschange',leafsChangeFunction);
 
+    //externalWMSlayers
+    if(enableExtraLayers) {
+        var extraLayGroup = new Ext.tree.TreeNode({
+            leaf: false,
+            //checked: false,
+            expanded: true,
+            text: externalLayerTitleString[lang]
+        });
+        layerTree.root.appendChild(extraLayGroup);
+        //disable context menu
+        extraLayGroup.on("contextMenu", Ext.emptyFn, null, {preventDefault: true});
+
+        for (var k = 0; k < extraLayers.length; k++) {
+            var extraNode = new GeoExt.tree.LayerNode({
+                layer: extraLayers[k],
+                leaf: true,
+                checked: false,
+                uiProvider: Ext.tree.TriStateNodeUI
+            });
+            extraLayGroup.appendChild(extraNode);
+            extraNode.on("contextMenu", Ext.emptyFn, null, {preventDefault: true});
+        }
+    }
+
     //deal with commercial external bg layers
     if (enableBGMaps) {
         var BgLayerList = new Ext.tree.TreeNode({
@@ -1120,6 +1250,7 @@ function postLoading() {
         });
 
         layerTree.root.appendChild(BgLayerList);
+        BgLayerList.on("contextMenu", Ext.emptyFn, null, {preventDefault: true});
 
         if (visibleBackgroundLayer != null) {
             initialBGMap = -1;
@@ -1144,6 +1275,7 @@ function postLoading() {
                 currentlyVisibleBaseLayer = baseLayers[i].name;
             }
             BgLayerList.appendChild(bgnode);
+            bgnode.on("contextMenu", Ext.emptyFn, null, {preventDefault: true});
         }
     }
 
@@ -1709,6 +1841,22 @@ function mapToolbarHandler(btn, evt) {
             helpWin.show();
         }
     }
+    if (btn.id == "geoLocate") {
+        var gl = Ext.getCmp('geoLocate').baseAction.control;
+        featureInfoHighlightLayer.removeAllFeatures();
+
+        if (btn.pressed) {
+            gl.deactivate();
+            gl.watch = false;
+            //firstGeolocation = true;
+
+        }
+        else {
+
+            //firstGeolocation = true;
+            gl.activate();
+        }
+    }
 }
 
 function removeMeasurePopup() {
@@ -2068,6 +2216,7 @@ function imageFormatForLayers(layers) {
 
 //this function checks if layers and layer-groups are outside scale-limits.
 //if a layer is outside scale-limits, its label in the TOC is being displayed in a light gray
+//TODO UROS Tale funkcija ni optimalna, preurediti da bo lahko upoštevala tudi zunanje sloje
 function setGrayNameWhenOutsideScale() {
     if ( grayLayerNameWhenOutsideScale ) { //only if global boolean is set
 

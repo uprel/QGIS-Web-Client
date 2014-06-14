@@ -34,8 +34,10 @@ var enablePermalink = true;
 var permaLinkURLShortener = null; // "/wsgi/createShortPermalink.wsgi";
 
 var baseLayers = [];
+var extraLayers = [];
 var overviewLayer;
 var enableBGMaps = false;
+var enableExtraLayers = false;
 var initialBGMap = 0;
 			
 if(projectData.base_layers != null) {
@@ -44,7 +46,14 @@ if(projectData.base_layers != null) {
 	}
 	enableBGMaps = true;
 }
-			
+
+if(projectData.extra_layers != null) {
+    for(var j = 0; j < projectData.extra_layers.length; j++) {
+        extraLayers.push(eval(projectData.extra_layers[j]));
+    }
+    enableExtraLayers = true;
+}
+
 overviewLayer = eval(projectData.overview_layer);
 
 var mediaurl = '';
