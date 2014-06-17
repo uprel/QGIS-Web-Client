@@ -64,7 +64,8 @@ function showFeatureInfo(evt) {
 					map: map,
 					autoScroll: true,
 					height: geoExtMap.getHeight() * 0.3,
-					html: text,
+                    bodyStyle:'padding:5px',
+                    html: text,
 					maximizable: true,
 					collapsible: true
 				});
@@ -365,7 +366,7 @@ function parseFIResult(node) {
                         }
                         attributeNode = attributeNode.nextSibling;
                     }
-                    htmlText += "\n  </tbody>\n </table>";
+                    htmlText += "\n  </tbody>\n </table></br>";
                 }
                 else if (layerChildNode.nodeName === "Attribute") {
                     //case raster data
@@ -381,7 +382,7 @@ function parseFIResult(node) {
             //htmlText += "\n</ul>";
             if (hasAttributes) {
                 if (rasterData) {
-                    htmlText += "\n  </tbody>\n </table>";
+                    htmlText += "\n  </tbody>\n </table></br>";
                 }
                 //alert(htmlText);
                 featureInfoResultLayers.push(htmlText);

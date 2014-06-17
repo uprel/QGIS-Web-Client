@@ -552,8 +552,6 @@ Ext.ux.PagingToolbar = Ext.extend(Ext.PagingToolbar, {
 });
 Ext.reg('ux.paging', Ext.ux.PagingToolbar);
 
-
-
 Ext.ux.grid.RowNumberer = Ext.extend(Ext.grid.RowNumberer, {
     renderer: function(v, p, record, rowIndex) {
         if (this.rowspan) {
@@ -569,3 +567,13 @@ Ext.ux.grid.RowNumberer = Ext.extend(Ext.grid.RowNumberer, {
         }
     }
 });
+
+if(Ext.ux.grid.filter.NumericFilter) {
+    Ext.apply(Ext.ux.grid.filter.NumericFilter.prototype, {
+        menuItemCfgs : {
+            emptyText: '',
+            selectOnFocus: true,
+            width: 125
+        }
+    });
+}

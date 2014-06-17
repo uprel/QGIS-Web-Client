@@ -361,6 +361,7 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
             {
                 xtype: 'panel',
                 id: 'RightPanel',
+                title: '',
                 region: 'east',
                 split: true,
                 collapsible: true,

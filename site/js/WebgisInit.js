@@ -48,6 +48,8 @@ var help_active = false; //help window is active or not
 var helpWin; //Ext window that will display the help file
 var legendMetadataWindow_active = false; //legend graphic and metadata window is active or not
 var legendMetadataWindow; //Ext window that will hold the legend and metatadata
+var editFormWindow_active = false;
+var editFormWindow;
 var legendMetaTabPanel; //a reference to the Ext tabpanel holding the tabs for legend graphic and metadata
 var legendTab; //a reference to the Ext tab holding the legend graphic
 var metadataTab; //a reference to the Ext tab holding the metadata information
@@ -251,7 +253,7 @@ function postLoading() {
                 href: headerTermsOfUseLink,
                 //html: headerTermsOfUseText,
                 cls: 'x-tool',
-                title: headerTermsOfUseText,
+				'ext:qtip': headerTermsOfUseText,
                 target: '_self'
             });
 
@@ -1573,23 +1575,43 @@ function showSearchPanelResults(searchPanelInstance, features) {
         //test if we need paging (not actual size of results, just initial settings
         var pagingConfig = {};
         if (searchPanelInstance.gridResults>searchPanelInstance.gridResultsPageSize) {
-            pagingConfig = new Ext.PagingToolbar({
+            pagingConfig = new Ext.ux.PagingToolbar({
                 pageSize: searchPanelInstance.gridResultsPageSize,
                 store: searchPanelInstance.store,
-                displayInfo: false,
-                beforePageText: TR.extPagingBeforePageText,
-                afterPageText: TR.extPagingAfterPageText,
-                firstText: TR.extPagingFirstText,
-                lastText: TR.extPagingLastText,
-                nextText: TR.extPagingNextText,
-                prevText: TR.extPagingPrevText,
-                refreshText: TR.extPagingRefreshText
-                //displayMsg: 'Displaying topics {0} - {1} of {2}',
-                //emptyMsg: "No topics to display",
-
+                displayInfo: false
             });
 
         }
+
+        //filter config
+        var filters = new Ext.ux.grid.GridFilters({
+            // encode and local configuration options
+            encode: false, // json encode the filter query
+            local: true   // defaults to false (remote filtering)
+
+//            filters: [{
+//                type: 'numeric',
+//                dataIndex: 'id'
+//            }, {
+//                type: 'string',
+//                dataIndex: 'company',
+//                disabled: true
+//            }, {
+//                type: 'numeric',
+//                dataIndex: 'price'
+//            }, {
+//                type: 'date',
+//                dataIndex: 'date'
+//            }, {
+//                type: 'list',
+//                dataIndex: 'size',
+//                options: ['small', 'medium', 'large', 'extra large'],
+//                phpMode: true
+//            }, {
+//                type: 'boolean',
+//                dataIndex: 'visible'
+//            }]
+        });
 
         searchPanelInstance.resultsGrid = new Ext.grid.GridPanel({
             id:  searchPanelId,
@@ -1599,6 +1621,8 @@ function showSearchPanelResults(searchPanelInstance, features) {
             collapsed: false,
             store: searchPanelInstance.store,
             columns: searchPanelInstance.gridColumns,
+            plugins: [filters],
+            sm: new Ext.grid.RowSelectionModel({singleSelect: true}),
             autoHeight: autoHeight, // No vert. scrollbars in popup if true!!
             viewConfig: {
                 forceFit: true
@@ -1606,6 +1630,29 @@ function showSearchPanelResults(searchPanelInstance, features) {
             // paging bar on the bottom
             bbar: pagingConfig
         });
+
+        //for testing
+//        searchPanelInstance.resultsGrid.getBottomToolbar().add([
+//            {
+//                text: 'All Filter Data',
+//                tooltip: 'Get Filter Data for Grid',
+//                handler: function () {
+//                    var data = Ext.encode(searchPanelInstance.resultsGrid.filters.getFilterData());
+//                    Ext.Msg.alert('All Filter Data',data);
+//                }
+//            },{
+//
+//                text: 'Clear Filter Data',
+//                handler: function () {
+//                    searchPanelInstance.resultsGrid.filters.clearFilters();
+//                }
+//            },{
+//
+//                text: 'Edit selection',
+//                handler: StartEditing
+//             }
+//        ]);
+
         searchPanelInstance.resultsGrid.on('rowclick', searchPanelInstance.onRowClick, searchPanelInstance);
         targetComponent.add(searchPanelInstance.resultsGrid);
         targetComponent.doLayout();
@@ -1624,8 +1671,6 @@ function showSearchPanelResults(searchPanelInstance, features) {
     }
     return true;
 }
-
-
 
 function getVisibleLayers(visibleLayers, currentNode){
     while (currentNode != null){
@@ -2343,163 +2388,4 @@ function setGrayNameWhenOutsideScale() {
             }
         }
     }
-}
-
-// *******************
-// CONTEXT MENU STUFF
-// Function to zoom to layer extent - called by context menu on left panel (only on the leafs 
-// of tree node)
-function zoomToLayerExtent(item) {
-    var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
-
-    myArray = wmsLoader.projectSettings.capability.layers;
-    var arrayLength = myArray.length;
-    // Search through the layers of the project file
-    for (var i = 0; i < arrayLength; i++) {
-        l = myArray[i];
-        if (l.name == myLayerName) {
-            // NOTE: I'm using the default projection of the project.
-            // Maybe it would be a problem with different projections?
-            bbox = l.bbox[geoExtMap.map.projection.toString()].bbox;
-            geoExtMap.map.zoomToExtent(new OpenLayers.Bounds(bbox));
-            break;
-        }
-    }
-}
-
-function exportHandler(item) {
-    var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
-    var myFormat = item.container.menuItemId;
-
-    switch(myFormat) {
-        case 'SHP':
-            exportData(myLayerName,myFormat);
-            break;
-        case 'DXF':
-            exportData(myLayerName,myFormat);
-            break;
-        case 'CSV':
-            exportData(myLayerName,myFormat);
-            break;
-        default :
-            Ext.Msg.alert ('Error',myFormat+' not supported yet.');
-            break;
-
-    }
-}
-
-function onItemCheck(item, checked){
-    //here we should preserve context menu not closing
-}
-
-
-// Show the menu on right click of the leaf node of the layerTree object
-function contextMenuHandler(node) {
-    //disable option for opentable if layer is not queryable
-    var queryable = true;
-    queryable = wmsLoader.layerProperties[node.attributes.text].queryable;
-    var contTable = Ext.getCmp('contextOpenTable');
-    if (queryable)
-        contTable.setDisabled(false);
-    else
-        contTable.setDisabled(true);
-    node.select();
-    menuC.show ( node.ui.getAnchor());
-}
-
-
-function exportData(layer,format) {
-
-    //current view is used as bounding box for exporting data
-    var bbox = geoExtMap.map.calculateBounds();
-    //Ext.Msg.alert('Info',layer+' ' + bbox);
-
-    var exportUrl = "./client/php/export.php?" + Ext.urlEncode({
-        map:projectData.project,
-        SRS:authid,
-        map0_extent:bbox,
-        layer:layer,
-        format:format
-    });
-
-    var body = Ext.getBody();
-    var frame = body.createChild({
-        tag	:'iframe',
-        cls	:'x-hidden',
-        id		:'hiddenform-iframe',
-        name	:'iframe',
-        src	:exportUrl
-    });
-
-    //tol ni ok, nekako bo treba preveriti ali je vse ok z downloadom
-    // frame.on('load',
-    // function(e, t, o){
-    // alert(o.test);
-    // }
-    // , null, {test:'hello'});
-}
-
-function openAttTable() {
-    var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
-
-
-    var layer = new QGIS.SearchPanel({
-        id: 'layerData',
-        useWmsRequest: true,
-        queryLayer: myLayerName,
-        gridColumns: getLayerAttributes(myLayerName),
-        gridLocation: 'bottom',
-        gridTitle: myLayerName,
-        gridResults: 2000,
-        gridResultsPageSize: 20,
-        selectionLayer: myLayerName,
-        formItems: [],
-        doZoomToExtent: true
-
-    });
-
-    //Ext.getCmp('BottomPanel').setTitle(layer.gridTitle,'x-cols-icon');
-    //Ext.get('BottomPanel').setStyle('padding-top', '2px');
-
-    layer.onSubmit();
-
-    layer.on("featureselected", showFeatureSelected);
-    layer.on("featureselectioncleared", clearFeatureSelected);
-    layer.on("beforesearchdataloaded", showSearchPanelResults);
-
-}
-
-/**
- *
- * @param layer
- * @returns {{}}
- */
-function getLayerAttributes(layer) {
-
-    var ret = [];
-
-    for (var i=0;i<wmsLoader.layerProperties[layer].attributes.length;i++) {
-        ret[i] = {};
-        attribute = wmsLoader.layerProperties[layer].attributes[i];
-        ret[i].header = attribute.name;
-        ret[i].dataIndex = attribute.name;
-        ret[i].menuDisabled = true;
-        ret[i].sortable = true;
-        if(attribute.type=='double') {
-            ret[i].xtype = 'numbercolumn';
-            ret[i].format = '0.000,00/i';
-            ret[i].align = 'right';
-            //no effect
-            //ret[i].style = 'text-align:left'
-        }
-        if(attribute.type=='int') {
-            ret[i].xtype = 'numbercolumn';
-            ret[i].format = '000';
-            ret[i].align = 'right';
-        }
-    }
-
-    ret.unshift(new Ext.ux.grid.RowNumberer({width: 32}));
-
-    return ret;
 }
