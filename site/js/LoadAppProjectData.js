@@ -35,6 +35,7 @@ var permaLinkURLShortener = null; // "/wsgi/createShortPermalink.wsgi";
 
 var baseLayers = [];
 var extraLayers = [];
+var tablesOnStart = [];
 var overviewLayer;
 var enableBGMaps = false;
 var enableExtraLayers = false;
@@ -52,6 +53,12 @@ if(projectData.extra_layers != null) {
         extraLayers.push(eval(projectData.extra_layers[j]));
     }
     enableExtraLayers = true;
+}
+
+if(projectData.tables_onstart != null) {
+    for(var k = 0; k < projectData.tables_onstart.length; k++) {
+        tablesOnStart.push(projectData.tables_onstart[k]);
+    }
 }
 
 overviewLayer = eval(projectData.overview_layer);
@@ -141,7 +148,7 @@ var qgisLayerTransparency = true;
 var MapOptions = {
   projection: new OpenLayers.Projection(authid),
   units: "m",
-  numZoomLevels:20,
+  numZoomLevels:23,
   fractionalZoom: enableBGMaps ? false : true,
   transitionEffect:"resize",
   zoomDuration: 1,

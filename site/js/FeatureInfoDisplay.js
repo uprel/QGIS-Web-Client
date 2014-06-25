@@ -59,18 +59,23 @@ function showFeatureInfo(evt) {
      
 				//new way GeoExt Popup
 				clickPopup = new GeoExt.Popup({
-					title: clickPopupTitleString[lang],
+                    title: clickPopupTitleString[lang],
 					location: map.getLonLatFromPixel(evt.xy),
 					map: map,
 					autoScroll: true,
-					height: geoExtMap.getHeight() * 0.3,
                     bodyStyle:'padding:5px',
                     html: text,
 					maximizable: true,
-					collapsible: true
+					collapsible: true,
+                    listeners: {
+                        beforeshow: function() {
+                            var maxHeight = geoExtMap.getHeight() * 0.8;
+                            if (this.getHeight()> maxHeight) {
+                                this.setHeight(maxHeight);
+                            }
+                       }
+                   }
 				});
-				//can't have autoHeight or dinamyically set height
-				//clickPopup.setSize(geoExtMap.getWidth() * 0.3,geoExtMap.getHeight() * 0.3);
 				clickPopup.show();
 				
 				//old way with OpenLayers.Popup

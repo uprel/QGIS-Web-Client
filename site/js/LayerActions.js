@@ -1,27 +1,12 @@
-/**
- * Created by Uros on 15.6.2014.
- */
-
 // *******************
 // CONTEXT MENU STUFF
 // Function to zoom to layer extent - called by context menu on left panel (only on the leafs
 // of tree node)
 function zoomToLayerExtent(item) {
+    var bbox = null;
     var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
-
-    myArray = wmsLoader.projectSettings.capability.layers;
-    var arrayLength = myArray.length;
-    // Search through the layers of the project file
-    for (var i = 0; i < arrayLength; i++) {
-        l = myArray[i];
-        if (l.name == myLayerName) {
-            // NOTE: I'm using the default projection of the project.
-            // Maybe it would be a problem with different projections?
-            bbox = l.bbox[geoExtMap.map.projection.toString()].bbox;
-            geoExtMap.map.zoomToExtent(new OpenLayers.Bounds(bbox));
-            break;
-        }
-    }
+    bbox = new OpenLayers.Bounds(wmsLoader.layerProperties[myLayerName].bbox).transform('EPSG:4326', geoExtMap.map.projection);
+    geoExtMap.map.zoomToExtent(bbox);
 }
 
 function exportHandler(item) {

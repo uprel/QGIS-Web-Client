@@ -245,6 +245,11 @@ Ext.extend(QGIS.WMSCapabilitiesLoader, GeoExt.tree.WMSCapabilitiesLoader, {
       return null;
     }
   },
+    /**
+     * UROS: This function doesn't seem to work. There is no evaluate function
+     * @param layername
+     * @returns {undefined}
+     */
   findLayerNodeByName: function(layername) {
     //goal of this function is to find a layer by its name
     //we need to fork between IE 7/8 and modern browsers
@@ -280,7 +285,7 @@ Ext.extend(QGIS.WMSCapabilitiesLoader, GeoExt.tree.WMSCapabilitiesLoader, {
  */
 function validateFieldName(name) {
     var str='';
-    str=name.replace('.','');
+    str=name.replace(/\./g,'');
     return str;
 }
 
@@ -691,10 +696,14 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
   gridTitle: '',
   gridResults: 100,
   gridResultsPageSize: 20,
+  tabClosable: true,
 
   constructor: function (config) {
     config = config || {};
     config.useWmsRequest = config.useWmsRequest || false;
+    if(config.tabClosable == null) {
+        config.tabClosable = true;
+    }
     config.queryLayer = config.queryLayer || '';
     config.formItems = config.formItems || [];
     config.gridColumns = config.gridColumns || [];

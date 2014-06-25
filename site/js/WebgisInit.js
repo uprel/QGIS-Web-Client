@@ -1616,7 +1616,7 @@ function showSearchPanelResults(searchPanelInstance, features) {
         searchPanelInstance.resultsGrid = new Ext.grid.GridPanel({
             id:  searchPanelId,
             title: searchPanelInstance.gridTitle,
-            closable: true,
+            closable: searchPanelInstance.tabClosable,
             collapsible: collapsible,
             collapsed: false,
             store: searchPanelInstance.store,

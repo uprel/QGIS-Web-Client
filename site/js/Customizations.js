@@ -28,6 +28,34 @@ function customInit() {
 
 // called before map initialization
 function customBeforeMapInit() {
+
+    //open tables for layers from db setting
+    //tabs for this tables cannot be closed
+    for (var j=0; j < tablesOnStart.length;j++) {
+        var myLayerName = tablesOnStart[j];
+
+        if (wmsLoader.projectSettings.capability.layerDrawingOrder.indexOf(myLayerName)>=0) {
+            var layer = new QGIS.SearchPanel({
+                id: 'layerData',
+                useWmsRequest: true,
+                queryLayer: myLayerName,
+                gridColumns: getLayerAttributes(myLayerName),
+                gridLocation: 'bottom',
+                gridTitle: myLayerName,
+                gridResults: 2000,
+                gridResultsPageSize: 20,
+                selectionLayer: myLayerName,
+                formItems: [],
+                doZoomToExtent: true,
+                tabClosable: false
+            });
+            layer.onSubmit();
+            layer.on("featureselected", showFeatureSelected);
+            layer.on("featureselectioncleared", clearFeatureSelected);
+            layer.on("beforesearchdataloaded", showSearchPanelResults);
+        }
+    }
+
 }
 
 // called after map initialization
