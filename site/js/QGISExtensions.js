@@ -696,6 +696,7 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
   gridTitle: '',
   gridResults: 100,
   gridResultsPageSize: 20,
+  gridEditable: false,
   tabClosable: true,
 
   constructor: function (config) {
@@ -703,6 +704,9 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
     config.useWmsRequest = config.useWmsRequest || false;
     if(config.tabClosable == null) {
         config.tabClosable = true;
+    }
+    if(config.gridEditable == null) {
+        config.gridEditable = false;
     }
     config.queryLayer = config.queryLayer || '';
     config.formItems = config.formItems || [];

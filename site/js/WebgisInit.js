@@ -679,7 +679,6 @@ function postLoading() {
         geoExtMap.map.addControl(new OpenLayers.Control.Zoom());
 
         //for debuggin TODO UROS REMOVE THIS
-        //to ne dela verjetno zato ker imam custom openlayers build in je mogoče to šlo ven
         //geoExtMap.map.addControl(new OpenLayers.Control.LayerSwitcher({'ascending':false}));
 
         //coordinate display
@@ -933,7 +932,7 @@ function postLoading() {
             }
         });
         geoLocateAction.control.events.register("locationfailed",this,function() {
-            OpenLayers.Console.log('Location detection failed');
+            console.log('Location detection failed');
         });
 
 
@@ -1616,6 +1615,7 @@ function showSearchPanelResults(searchPanelInstance, features) {
         searchPanelInstance.resultsGrid = new Ext.grid.GridPanel({
             id:  searchPanelId,
             title: searchPanelInstance.gridTitle,
+            itemId: searchPanelInstance.gridTitle,
             closable: searchPanelInstance.tabClosable,
             collapsible: collapsible,
             collapsed: false,
@@ -1632,8 +1632,8 @@ function showSearchPanelResults(searchPanelInstance, features) {
         });
 
         //for testing
-//        searchPanelInstance.resultsGrid.getBottomToolbar().add([
-//            {
+        searchPanelInstance.resultsGrid.getBottomToolbar().add([
+            {
 //                text: 'All Filter Data',
 //                tooltip: 'Get Filter Data for Grid',
 //                handler: function () {
@@ -1642,16 +1642,31 @@ function showSearchPanelResults(searchPanelInstance, features) {
 //                }
 //            },{
 //
-//                text: 'Clear Filter Data',
-//                handler: function () {
-//                    searchPanelInstance.resultsGrid.filters.clearFilters();
-//                }
-//            },{
-//
-//                text: 'Edit selection',
-//                handler: StartEditing
-//             }
-//        ]);
+
+                iconCls : 'x-clearfilter-icon',
+                tooltip: TR.clearFilter,
+                //scale: 'medium',
+                //disabled: true,
+                handler: function () {
+                    searchPanelInstance.resultsGrid.filters.clearFilters();
+                }
+            },{
+
+                iconCls : 'x-edit-icon',
+                tooltip: TR.editDisabled,
+                id: 'editButton_'+searchPanelInstance.queryLayer,
+                //scale: 'medium',
+                disabled: true,
+                handler: editHandler
+             }
+        ]);
+
+        //enable edit button in toolbar if table is editable
+        if (searchPanelInstance.gridEditable==true) {
+            var edBtn = Ext.getCmp('editButton_'+searchPanelInstance.queryLayer);
+            edBtn.disabled = false;
+            edBtn.tooltip = TR.editData;
+        }
 
         searchPanelInstance.resultsGrid.on('rowclick', searchPanelInstance.onRowClick, searchPanelInstance);
         targetComponent.add(searchPanelInstance.resultsGrid);

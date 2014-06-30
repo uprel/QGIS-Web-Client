@@ -30,7 +30,8 @@ function customInit() {
 function customBeforeMapInit() {
 
     //open tables for layers from db setting
-    //tabs for this tables cannot be closed
+    //tabs for this tables cannot be closed and are marked for editing
+    //only fields checked as WFS in qgis project
     for (var j=0; j < tablesOnStart.length;j++) {
         var myLayerName = tablesOnStart[j];
 
@@ -44,6 +45,7 @@ function customBeforeMapInit() {
                 gridTitle: myLayerName,
                 gridResults: 2000,
                 gridResultsPageSize: 20,
+                gridEditable: true,
                 selectionLayer: myLayerName,
                 formItems: [],
                 doZoomToExtent: true,

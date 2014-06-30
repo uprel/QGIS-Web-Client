@@ -149,12 +149,10 @@ function getLayerAttributes(layer) {
     return ret;
 }
 
-function setupEditFormWindow() {
+function setupEditFormWindow(title) {
     editFormWindow = new Ext.Window({
-        title: 'aaaaaaaaaaaaaaaa',
-        width: geoExtMap.getWidth() * 0.5,
-        height: geoExtMap.getHeight() * 0.5,
-        id: 'editForm',
+        title: title,
+        width: geoExtMap.getWidth() * 0.4,
         autoScroll: true,
         maximizable: true,
         layout: 'fit',
@@ -171,86 +169,96 @@ function setupEditFormWindow() {
             }
         }
     });
-    //editForm = Ext.getCmp('editForm');
 }
 
-function StartEditing() {
+function editHandler() {
 
-    //initialize Ext Window if undefined
-    if (editFormWindow == undefined) {
-        setupEditFormWindow();
+    var selmod = this.ownerCt.ownerCt.getSelectionModel();
+    if (selmod.selections.items.length==0) {
+        //TODO TRANSLATE
+        Ext.Msg.alert("Napaka","Izberi vrstico!");
     }
+    else {
+        var selectedLayer = this.ownerCt.ownerCt.title;
+        var recId = selmod.getSelected().id;
 
-    var editor = new QGIS.Editor({
-        renderTo:   'editForm'
 
-    });
 
-    //editForm.add(editor);
+//        var saveStrategy = new OpenLayers.Strategy.Save();
+//        var refreshStrategy = new OpenLayers.Strategy.Refresh();
 
-    //legendMetadataWindow.setTitle(legendMetadataWindowTitleString[lang] + ' "'+layertitle+'"');
-    if (editFormWindow_active == false) {
-        editFormWindow.show();
+//        var edit_1 = new OpenLayers.Layer.Vector("Editable Features", {
+//            strategies: [refreshStrategy,saveStrategy],
+//            projection: new OpenLayers.Projection("EPSG:2170"),
+//            protocol: new OpenLayers.Protocol.WFS({
+//                version: "1.0.0",
+//                srsName: "EPSG:2170",
+//                url: wmsURI,
+//                featureNS: "http://www.qgis.org/gml",
+//                featureType: selectedLayer,
+//                geometryName: "geometry"
+//                //styleMap: styleMapHighLightLayer
+//                //,schema: "http://demo.opengeo.org/geoserver/wfs/DescribeFeatureType?version=1.1.0&typename=og:restricted"
+//            })
+//        });
+
+        //edit_1.filter(new OpenLayers.Filter.Logical)
+
+        //refreshStrategy.activate();
+        //refreshStrategy.refresh();
+        //alert(edit_1.getFeatureById(0));
+        //geoExtMap.map.addLayers([edit_1]);
+
+
+        //initialize Ext Window if undefined
+        var editFormWindowTitle = TR.editData+ ": " + selectedLayer+" ID"+recId;
+        if (editFormWindow == undefined) {
+            setupEditFormWindow(editFormWindowTitle);
+        }
+        else {
+            editFormWindow.destroy();
+            setupEditFormWindow(editFormWindowTitle);
+        }
+
+        var editor = new QGIS.Editor({
+            editLayer: selectedLayer
+        });
+
+         //getfeature request
+        var getFeatureRequest = OpenLayers.Request.GET({
+            url: wmsURI,
+            params: {
+                typeName: editor.editLayer,
+                service: "WFS",
+                version: "1.0.0",
+                request: "GetFeature",
+                featureid: editor.editLayer+"."+recId
+            },
+            success: function(reply) {
+                var resultFormat = new OpenLayers.Format.GML();
+                var record = resultFormat.read(reply.responseText)[0];
+                editor.loadRecord(record);
+
+                //var feature = resultFormat.parseFeature(record);
+
+                //edit_1.removeAllFeatures();
+                //edit_1.addFeatures(record);
+
+                //refreshStrategy.refresh();
+
+            },
+            failure: function(reply) {
+                alert("failed");
+            }
+        });
+
+        //console.log("GetFeatureRequestReadyState="+getFeatureRequest.readyState);
+
+        editFormWindow.add(editor);
+        editFormWindow.doLayout();
+
+        if (editFormWindow_active == false) {
+            editFormWindow.show();
+        }
     }
-
-
-
-
-
-//    var editWindow = new Ext.FormPanel({
-//        labelWidth: 75, // label settings here cascade unless overridden
-//        url:'save-form.php',
-//        frame:true,
-//        title: 'Simple Form',
-//        bodyStyle:'padding:5px 5px 0',
-//        width: 200,
-//        defaults: {width: 100},
-//        defaultType: 'textfield',
-//
-//        items: [{
-//            fieldLabel: 'First Name',
-//            name: 'first',
-//            allowBlank:false
-//        },{
-//            fieldLabel: 'Last Name',
-//            name: 'last'
-//        },{
-//            fieldLabel: 'Company',
-//            name: 'company'
-//        }, {
-//            fieldLabel: 'Email',
-//            name: 'email',
-//            vtype:'email'
-//        }, new Ext.form.TimeField({
-//            fieldLabel: 'Time',
-//            name: 'time',
-//            minValue: '8:00am',
-//            maxValue: '6:00pm'
-//        })
-//        ],
-//
-//        buttons: [{
-//            text: 'Save'
-//        },{
-//            text: 'Cancel'
-//        }]
-//    });
-
-
-
-
-
-
-    //targetComponent.add(simple);
-
-
-    //targetComponent = Ext.getCmp('RightPanel');
-    //targetComponent.show();
-    //targetComponent.collapsible && targetComponent.expand();
-
-    //editor.buildForm();
-    //editor.buildUI();
-    //targetComponent.doLayout();
-
-
 }
