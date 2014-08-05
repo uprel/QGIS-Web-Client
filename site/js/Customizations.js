@@ -37,7 +37,6 @@ function customBeforeMapInit() {
 
         if (wmsLoader.projectSettings.capability.layerDrawingOrder.indexOf(myLayerName)>=0) {
             var layer = new QGIS.SearchPanel({
-                id: 'layerData',
                 useWmsRequest: true,
                 queryLayer: myLayerName,
                 gridColumns: getLayerAttributes(myLayerName),

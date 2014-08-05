@@ -86,7 +86,6 @@ function openAttTable() {
 
 
     var layer = new QGIS.SearchPanel({
-        id: 'layerData',
         useWmsRequest: true,
         queryLayer: myLayerName,
         gridColumns: getLayerAttributes(myLayerName),

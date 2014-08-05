@@ -64,6 +64,8 @@ Ext.onReady(function () {
     //dpi detection
     screenDpi = document.getElementById("dpiDetection").offsetHeight;
     OpenLayers.DOTS_PER_INCH = screenDpi;
+    //test
+    //OpenLayers.DOTS_PER_INCH = 90.71428571428572;
 
     //fix for IE <= 8, missing indexOf function
     if (!Array.prototype.indexOf) {
@@ -935,6 +937,51 @@ function postLoading() {
             console.log('Location detection failed');
         });
 
+        //TODO floor combo if enabled
+        //TEST
+//        // some data used in the examples
+//        Ext.namespace('Ext.exampledata');
+//
+//        Ext.exampledata.states = [
+//            ['AL', 'Alabama', 'The Heart of Dixie'],
+//            ['AK', 'Alaska', 'The Land of the Midnight Sun'],
+//            ['AZ', 'Arizona', 'The Grand Canyon State'],
+//            ['AR', 'Arkansas', 'The Natural State'],
+//            ['CA', 'California', 'The Golden State'],
+//            ['CO', 'Colorado', 'The Mountain State']
+//
+//        ];
+//
+//
+////        var floorView = new Ext.Button({
+////            text: 'ETAŽA',
+////            //id: 'navZoomFullExtent',
+////            scale: 'medium',
+////            enableToggle : undefined,
+////            menu : {items: [{text:'Klet'},{text:'Pritličje'},{text:'1. Nadstropje'},{text:'Mansarda'}]}
+////            //map: geoExtMap.map,
+////            //tooltip: zoomFullViewTooltipString[lang],
+////            //tooltipType: 'qtip'
+////        });
+//
+//        // add a combobox to the toolbar
+//        var store = new Ext.data.ArrayStore({
+//            fields: ['abbr', 'state'],
+//            data : Ext.exampledata.states // from states.js
+//        });
+//
+//        var combo = new Ext.form.ComboBox({
+//            store: store,
+//            displayField: 'state',
+//            typeAhead: true,
+//            mode: 'local',
+//            triggerAction: 'all',
+//            emptyText:'Select a state...',
+//            selectOnFocus:true,
+//            width:135
+//        });
+//        myTopToolbar.insert(200, combo);
+//       // zoomExtent.handler = mapToolbarHandler;
 
         //add QGISSearchCombo
         if (useGeoNamesSearchBox || searchBoxQueryURL != null) {
@@ -1558,6 +1605,7 @@ function showSearchPanelResults(searchPanelInstance, features) {
                 break;
             case 'default':
             default:
+                collapsible = false;
                 targetComponent = searchPanelInstance;
                 break;
         }
@@ -1631,9 +1679,12 @@ function showSearchPanelResults(searchPanelInstance, features) {
             bbar: pagingConfig
         });
 
-        //for testing
-        searchPanelInstance.resultsGrid.getBottomToolbar().add([
-            {
+        //additional buttons in bottom toolbar
+        //if paging config is defined, otherwise we don't need this
+        if(pagingConfig.displayInfo==false) {
+
+            searchPanelInstance.resultsGrid.getBottomToolbar().add([
+                {
 //                text: 'All Filter Data',
 //                tooltip: 'Get Filter Data for Grid',
 //                handler: function () {
@@ -1643,30 +1694,35 @@ function showSearchPanelResults(searchPanelInstance, features) {
 //            },{
 //
 
-                iconCls : 'x-clearfilter-icon',
-                tooltip: TR.clearFilter,
-                //scale: 'medium',
-                //disabled: true,
-                handler: function () {
-                    searchPanelInstance.resultsGrid.filters.clearFilters();
+                    iconCls : 'x-clearfilter-icon',
+                    tooltip: TR.clearFilter,
+                    //scale: 'medium',
+                    //disabled: true,
+                    handler: function () {
+                        searchPanelInstance.resultsGrid.filters.clearFilters();
+                    }
+                },{
+
+                    iconCls : 'x-edit-icon',
+                    tooltip: TR.editDisabled,
+                    id: 'editButton_'+searchPanelInstance.queryLayer,
+                    //scale: 'medium',
+                    disabled: true,
+                    handler: editHandler
                 }
-            },{
+            ]);
 
-                iconCls : 'x-edit-icon',
-                tooltip: TR.editDisabled,
-                id: 'editButton_'+searchPanelInstance.queryLayer,
-                //scale: 'medium',
-                disabled: true,
-                handler: editHandler
-             }
-        ]);
+            //enable edit button in toolbar if table is editable
+            if (searchPanelInstance.gridEditable==true) {
+                var edBtn = Ext.getCmp('editButton_'+searchPanelInstance.queryLayer);
+                edBtn.disabled = false;
+                edBtn.tooltip = TR.editData;
+            }
 
-        //enable edit button in toolbar if table is editable
-        if (searchPanelInstance.gridEditable==true) {
-            var edBtn = Ext.getCmp('editButton_'+searchPanelInstance.queryLayer);
-            edBtn.disabled = false;
-            edBtn.tooltip = TR.editData;
+
+
         }
+
 
         searchPanelInstance.resultsGrid.on('rowclick', searchPanelInstance.onRowClick, searchPanelInstance);
         targetComponent.add(searchPanelInstance.resultsGrid);

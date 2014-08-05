@@ -176,7 +176,7 @@ Ext.extend(QGIS.WMSCapabilitiesLoader, GeoExt.tree.WMSCapabilitiesLoader, {
           },
           "Attribute": function(node, obj) {
             var attribute = {
-              name: validateFieldName(node.getAttribute("name")),
+              name: validateFieldName(node.getAttribute("name"),node.getAttribute("alias")),
               type: node.getAttribute("type"),
               precision: parseInt(node.getAttribute("precision")),
               length: parseInt(node.getAttribute("length")),
@@ -280,10 +280,14 @@ Ext.extend(QGIS.WMSCapabilitiesLoader, GeoExt.tree.WMSCapabilitiesLoader, {
 });
 
 /**
- * Remove dot from field name
+ * Remove dot from field name and use alias if exists
  * @param name
+ * @param alias
+ * @returns {string}
  */
-function validateFieldName(name) {
+function validateFieldName(name,alias) {
+    if (alias!=null)
+        name = alias;
     var str='';
     str=name.replace(/\./g,'');
     return str;
@@ -732,6 +736,7 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
     this.form = new Ext.form.FormPanel({
       autoHeight: true,
       bodyBorder: false,
+      padding: 3,
       defaults: {
         anchor: '-10'
       },
@@ -815,9 +820,15 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
           valueQuotes = "";
         }
         else {
-          valueQuotes = "'"
+          valueQuotes = "'";
         }
-        filter.push("\"" + key + "\" "+ filterOp +" " + valueQuotes + fieldValues[key] + valueQuotes);
+        if (field.initialConfig.filterOp.indexOf('LIKE')>-1) {
+            valueExtra="%";
+        }
+        else {
+            valueExtra="";
+        }
+        filter.push("\"" + key + "\" "+ filterOp +" " + valueQuotes + valueExtra + fieldValues[key] + valueExtra + valueQuotes);
         fieldsValidate &= field.validate();
       }
     }
