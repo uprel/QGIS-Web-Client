@@ -798,16 +798,34 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
     this.fireEvent("featureselectioncleared");
     this.fireEvent("searchformsubmitted");
 
-      //TODO uros
-      //this.el.mask(pleaseWaitString[lang], 'x-mask-loading');
-    if (this.useWmsRequest) {
-      this.submitGetFeatureInfo();
+      //loading mask
+      var maskElement = this;
+      if(this.gridLocation=='bottom') {
+          maskElement = Ext.getCmp('BottomPanel');
+      }
+      // Make sure it's shown and expanded
+      maskElement.show();
+      maskElement.collapsible && maskElement.expand();
+
+      if (this.useWmsRequest) {
+
+          //alert(Ext.getCmp('table_'+this.queryLayer));
+          //check if we already have table for layer in case of open table call
+          if(Ext.getCmp('table_'+this.queryLayer)==undefined) {
+              this.submitGetFeatureInfo();
+              maskElement.el.mask(pleaseWaitString[lang], 'x-mask-loading');
+          }
+          else {
+              maskElement.activate(Ext.getCmp('table_'+this.queryLayer));
+          }
+
     } else {
       this.submitForm();
     }
   },
 
   submitGetFeatureInfo: function() {
+
     var filter = [];
     var fieldValues = this.form.getForm().getFieldValues();
     var fieldsValidate = true;
@@ -913,8 +931,13 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
       // show results, firing events: see Wegbisinit.js
       this.fireEvent('beforesearchdataloaded', this, features);
       this.store.loadData(features, false);
-//TODO      
-//this.el.unmask();
+
+        //remove loading mask
+        var maskElement = this.el;
+        if(this.gridLocation=='bottom') {
+            maskElement = Ext.getCmp('BottomPanel').el;
+        }
+        maskElement.unmask();
 
       if (destroyStore) {
         this.store = null;

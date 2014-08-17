@@ -378,7 +378,14 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
                 collapsible: true,
                 collapsed: true,
                 hidden: false,
-                height: 300
+                height: 300,
+                listeners: {
+                    tabchange: function() {
+                        if(this.items.getCount()==0) {
+                            this.collapse();
+                        }
+                    }
+                }
             }]
 		}];
 

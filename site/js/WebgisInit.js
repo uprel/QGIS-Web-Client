@@ -1565,12 +1565,6 @@ function showSearchPanelResults(searchPanelInstance, features) {
         //    mapSearchPanelOutputRegion = 'default';
         //}
 
-
-        //test uros
-        //alert(searchPanelInstance.title);
-
-
-
         // These option are for different output modes
         var collapsible = true;
         var autoHeight = true;
@@ -1610,8 +1604,8 @@ function showSearchPanelResults(searchPanelInstance, features) {
                 break;
         }
         // Make sure it's shown and expanded
-        targetComponent.show();
-        targetComponent.collapsible && targetComponent.expand();
+        //targetComponent.show();
+        //targetComponent.collapsible && targetComponent.expand();
         // Delete and re-create
         try {
             Ext.getCmp('SearchPanelResultsGrid').destroy();
@@ -1723,13 +1717,13 @@ function showSearchPanelResults(searchPanelInstance, features) {
 
         }
 
-
         searchPanelInstance.resultsGrid.on('rowclick', searchPanelInstance.onRowClick, searchPanelInstance);
         targetComponent.add(searchPanelInstance.resultsGrid);
         targetComponent.doLayout();
         // Always make sure it's shown and expanded
         searchPanelInstance.resultsGrid.show();
         searchPanelInstance.resultsGrid.collapsible && searchPanelInstance.resultsGrid.expand();
+
     } else {
         // No features: shouldn't we warn the user?
         Ext.MessageBox.alert(searchPanelTitleString[lang], searchNoRecordsFoundString[lang]);
