@@ -783,10 +783,11 @@ function postLoading() {
         //UROS: selecting identifytool as default action
         Ext.getCmp('IdentifyTool').toggle(true);
         //do i need this?
-        //identifyToolActive = true;
-        //activateGetFeatureInfo(true);
+        identifyToolActive = true;
+        activateGetFeatureInfo(true);
 
         var myTopToolbar = Ext.getCmp('myTopToolbar');
+
         //zoom extent
         var zoomExtent = new Ext.Button({
             icon: 'gis_icons/mActionZoomFullExtent.png',
@@ -794,10 +795,10 @@ function postLoading() {
             scale: 'medium',
             map: geoExtMap.map,
             tooltip: zoomFullViewTooltipString[lang],
-            tooltipType: 'qtip'
+            tooltipType: 'qtip',
+            handler: mapToolbarHandler
         });
         myTopToolbar.insert(0, zoomExtent);
-        zoomExtent.handler = mapToolbarHandler;
 
         //zoom box
         var zoomBoxAction = new GeoExt.Action({
@@ -840,6 +841,19 @@ function postLoading() {
         });
         myTopToolbar.insert(3, zoomToNextAction);
 
+        //streetViewBtn
+        var streetView = new Ext.Button({
+            icon: 'gis_icons/mActionStreetView.png',
+            id: 'streetViewBtn',
+            scale: 'medium',
+			//TODO TRANSLATE
+            tooltip: 'GoogleStreetView način',
+            tooltipType: 'qtip',
+            toggleGroup: 'mapTools',
+            enableToggle: true,
+            handler: mapToolbarHandler
+        });
+
         //geolocate control
         var geoLocateAction = new GeoExt.Action({
             icon: 'gis_icons/mActionLocate.png',
@@ -848,7 +862,7 @@ function postLoading() {
             control: new OpenLayers.Control.Geolocate({
                     bind: false,
                     geolocationOptions: {
-                        enableHighAccuracy: false,
+                        enableHighAccuracy: true,
                         maximumAge: 0,
                         timeout: 7000
                     }
@@ -858,10 +872,9 @@ function postLoading() {
             tooltipType: 'qtip',
             handler: mapToolbarHandler
         });
-        myTopToolbar.insert(100, geoLocateAction);
+        myTopToolbar.insert(100, geoLocateAction,streetView);
 
         //geolocation additional stuff
-        //TODO UROS CLEAN UP
         var pulsate = function(feature) {
             var point = feature.geometry.getCentroid(),
                 bounds = feature.geometry.getBounds(),
@@ -891,11 +904,6 @@ function postLoading() {
             };
             window.resizeInterval = window.setInterval(resize, 50, point, radius);
         };
-        var style = {
-            fillColor: '#000',
-            fillOpacity: 0.1,
-            strokeWidth: 0
-        };
 
         var firstGeolocation = true;
 
@@ -910,19 +918,13 @@ function postLoading() {
                     0
                 ),
                 {},
-                style
+                locationAccuracyStyle
             );
             featureInfoHighlightLayer.addFeatures([
                 new OpenLayers.Feature.Vector(
                     e.point,
                     {},
-                    {
-                        graphicName: 'cross',
-                        strokeColor: '#f00',
-                        strokeWidth: 2,
-                        fillOpacity: 0,
-                        pointRadius: 10
-                    }
+                    locationMarkerStyle
                 ),
                 circle
             ]);
@@ -934,56 +936,12 @@ function postLoading() {
             }
         });
         geoLocateAction.control.events.register("locationfailed",this,function() {
-            console.log('Location detection failed');
+            //TODO TRANSLATE
+            Ext.Msg.alert("Error","Location detection failed");
+            geoLocateAction.control.deactivate();
         });
 
-        //TODO floor combo if enabled
-        //TEST
-//        // some data used in the examples
-//        Ext.namespace('Ext.exampledata');
-//
-//        Ext.exampledata.states = [
-//            ['AL', 'Alabama', 'The Heart of Dixie'],
-//            ['AK', 'Alaska', 'The Land of the Midnight Sun'],
-//            ['AZ', 'Arizona', 'The Grand Canyon State'],
-//            ['AR', 'Arkansas', 'The Natural State'],
-//            ['CA', 'California', 'The Golden State'],
-//            ['CO', 'Colorado', 'The Mountain State']
-//
-//        ];
-//
-//
-////        var floorView = new Ext.Button({
-////            text: 'ETAŽA',
-////            //id: 'navZoomFullExtent',
-////            scale: 'medium',
-////            enableToggle : undefined,
-////            menu : {items: [{text:'Klet'},{text:'Pritličje'},{text:'1. Nadstropje'},{text:'Mansarda'}]}
-////            //map: geoExtMap.map,
-////            //tooltip: zoomFullViewTooltipString[lang],
-////            //tooltipType: 'qtip'
-////        });
-//
-//        // add a combobox to the toolbar
-//        var store = new Ext.data.ArrayStore({
-//            fields: ['abbr', 'state'],
-//            data : Ext.exampledata.states // from states.js
-//        });
-//
-//        var combo = new Ext.form.ComboBox({
-//            store: store,
-//            displayField: 'state',
-//            typeAhead: true,
-//            mode: 'local',
-//            triggerAction: 'all',
-//            emptyText:'Select a state...',
-//            selectOnFocus:true,
-//            width:135
-//        });
-//        myTopToolbar.insert(200, combo);
-//       // zoomExtent.handler = mapToolbarHandler;
-
-        //add QGISSearchCombo
+         //add QGISSearchCombo
         if (useGeoNamesSearchBox || searchBoxQueryURL != null) {
             myTopToolbar.insert(myTopToolbar.items.length, new Ext.Toolbar.Fill());
 
@@ -1670,7 +1628,19 @@ function showSearchPanelResults(searchPanelInstance, features) {
                 forceFit: true
             },
             // paging bar on the bottom
-            bbar: pagingConfig
+            bbar: pagingConfig,
+            //select record if we have one result
+            listeners: {
+                render : function(grid){
+                    grid.store.on('load', function(store, records, options){
+                        if(features.length==1) {
+                            grid.getSelectionModel().selectFirstRow();
+                            grid.fireEvent('rowClick', grid, 0);
+                        }
+                    });
+                }
+            }
+
         });
 
         //additional buttons in bottom toolbar
@@ -1718,6 +1688,14 @@ function showSearchPanelResults(searchPanelInstance, features) {
         }
 
         searchPanelInstance.resultsGrid.on('rowclick', searchPanelInstance.onRowClick, searchPanelInstance);
+        searchPanelInstance.resultsGrid.on('keypress', function(e){
+            //pressing enter in selected row forces OnRowClick
+            if(e.getKey()==13) {
+                var rowIndex = this.getSelectionModel().last;
+                this.fireEvent('rowclick',this,rowIndex);
+            }
+        });
+
         targetComponent.add(searchPanelInstance.resultsGrid);
         targetComponent.doLayout();
         // Always make sure it's shown and expanded
@@ -1965,6 +1943,17 @@ function mapToolbarHandler(btn, evt) {
 
             //firstGeolocation = true;
             gl.activate();
+        }
+    }
+
+    if(btn.id == 'streetViewBtn') {
+        if (btn.pressed) {
+            StreetViewControl.activate();
+        }
+        else
+        {
+            StreetViewControl.deactivate();
+            featureInfoHighlightLayer.removeAllFeatures();
         }
     }
 }

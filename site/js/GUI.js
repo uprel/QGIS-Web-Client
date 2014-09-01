@@ -242,7 +242,7 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 							iconCls: '',
 							scale: 'medium',
 							id: 'IdentifyTool',
-                            hidden:true
+                            hidden:false
 						}, {
 							xtype: 'tbtext',
 							text: objectIdentificationTextLabel[lang],
@@ -366,8 +366,8 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
                 split: true,
                 collapsible: true,
                 collapsed: true,
-                hidden: true,
-                width: 200
+                hidden: false,
+                width: 300
             },
             {
                 xtype: 'tabpanel',

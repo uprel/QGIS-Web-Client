@@ -25,6 +25,7 @@ var featureInfoPopupContents;
 var closePopupClick = false; // stores if the click results from closing a clickPopup
 
 function showFeatureInfo(evt) {
+    removeClickPopup();
     if (identifyToolActive) {
         if (!closePopupClick) {
             var map = geoExtMap.map; // gets OL map object
@@ -77,7 +78,7 @@ function showFeatureInfo(evt) {
                    }
 				});
 				clickPopup.show();
-				
+
 				//old way with OpenLayers.Popup
 				// clickPopup = new OpenLayers.Popup.FramedCloud(
                     // null, // id
@@ -270,7 +271,9 @@ function onClickPopupClosed(evt) {
 function removeClickPopup() {
 	//var map = geoExtMap.map; // gets OL map object
     //map.removePopup(clickPopup);
-    clickPopup.destroy();
+    if(clickPopup) {
+        clickPopup.destroy();
+    }
     clickPopup = null;
     featureInfoHighlightLayer.removeAllFeatures();
 }
@@ -284,10 +287,21 @@ function removeHoverPopup(){
 }
 
 function showFeatureSelected(args) {
-    // select feature in layer
-    thematicLayer.mergeNewParams({
-        "SELECTION": args["layer"] + ":" + args["id"]
-    });
+
+    if(args["geometry"]==undefined) {
+        // select feature in layer
+        thematicLayer.mergeNewParams({
+            "SELECTION": args["layer"] + ":" + args["id"]
+        });
+    }
+    else
+    {
+        //lets higlight selected features geometry instead
+        featureInfoHighlightLayer.removeAllFeatures();
+        var feature = new OpenLayers.Feature.Vector(OpenLayers.Geometry.fromWKT(args["geometry"]));
+        featureInfoHighlightLayer.addFeatures([feature]);
+    }
+
     if (args["doZoomToExtent"]){
         geoExtMap.map.zoomToExtent(args["bbox"]);
     }
@@ -317,16 +331,23 @@ function parseFIResult(node) {
             var hasAttributes = false;
             var rasterData = false;
             var htmlText = "";
-			if (showFILayerTitle) {
-				htmlText += "<h2>" + wmsLoader.layerProperties[node.getAttribute("name")].title + "</h2>";
-			}
+			//if (showFILayerTitle) {
+			//	htmlText += "<h2>" + wmsLoader.layerProperties[node.getAttribute("name")].title + "</h2>";
+			//}
             var geoms = new Array();
             var layerChildNode = node.firstChild;
             while (layerChildNode) {
+                var layerTitle = wmsLoader.layerProperties[node.getAttribute("name")].title;
                 if (layerChildNode.hasChildNodes() && layerChildNode.nodeName === "Feature") {
+                    var attributeNode = layerChildNode.firstChild;
+
+                    if (showFILayerTitle) {
+                        htmlText += "<h2>" + layerTitle + "</h2>";
+                    }
+
                     htmlText += '\n <p></p>\n <table>\n  <tbody>';
                     //case vector data
-                    var attributeNode = layerChildNode.firstChild;
+
                     while (attributeNode) {
                         if (attributeNode.nodeName == "Attribute") {
                             var attName = attributeNode.getAttribute("name");

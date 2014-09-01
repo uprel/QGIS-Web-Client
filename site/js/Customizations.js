@@ -1,29 +1,29 @@
 // customInit() is called before any map initialization
 function customInit() {
 
-//     // I create a new control click event class
-//     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
-//         defaultHandlerOptions: {
-//                 'single': true,
-//                 'double': false,
-//                 'pixelTolerance': 0,
-//                 'stopSingle': false,
-//                 'stopDouble': false
-//         },
-//         initialize: function(options) {
-//                 this.handlerOptions = OpenLayers.Util.extend(
-//                         {}, this.defaultHandlerOptions
-//                 );
-//                 OpenLayers.Control.prototype.initialize.apply(
-//                         this, arguments
-//                 );
-//                 this.handler = new OpenLayers.Handler.Click(
-//                         this, {
-//                                 'click': this.trigger
-//                         }, this.handlerOptions
-//                 );
-//         }
-//     });
+     // I create a new control click event class
+     OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {
+         defaultHandlerOptions: {
+                 'single': true,
+                 'double': false,
+                 'pixelTolerance': 0,
+                 'stopSingle': false,
+                 'stopDouble': false
+         },
+         initialize: function(options) {
+                 this.handlerOptions = OpenLayers.Util.extend(
+                         {}, this.defaultHandlerOptions
+                 );
+                 OpenLayers.Control.prototype.initialize.apply(
+                         this, arguments
+                 );
+                 this.handler = new OpenLayers.Handler.Click(
+                         this, {
+                                 'click': this.trigger
+                         }, this.handlerOptions
+                 );
+         }
+     });
 }
 
 // called before map initialization
@@ -62,19 +62,92 @@ function customBeforeMapInit() {
 // called after map initialization
 function customAfterMapInit() {
 
-//     // Create a new map control based on Control Click Event
-//     openlayersClickEvent = new OpenLayers.Control.Click( {
-//         trigger: function(e) {
-//             var xy = geoExtMap.map.getLonLatFromViewPortPx(e.xy);
-//             var x = xy.lon;
-//             var y = xy.lat;
-//             
-//             alert ( "You clicked on " + x + ", " + y );
-//         }
-//     });
-// 
-//     geoExtMap.map.addControl(openlayersClickEvent);
-}
+     // Create a new map control based on Control Click Event
+     StreetViewControl = new OpenLayers.Control.Click( {
+         trigger: function(e) {
+             openStreetView(geoExtMap.map.getLonLatFromViewPortPx(e.xy));
+         }
+     });
+
+
+    function openStreetView (location) {
+
+        //TODO have to check if google is avaliable
+
+        var panel = Ext.getCmp('RightPanel');
+        panel.removeAll();
+
+        var x = location.lon;
+        var y = location.lat;
+
+        //alert(location);
+
+        var locWgs = location.transform(
+            authid,
+            new OpenLayers.Projection("EPSG:4326"));
+
+        //add location to higlightlayer
+        var marker = new OpenLayers.Feature.Vector(
+            new OpenLayers.Geometry.Point(x,y),
+            {},
+            streetViewMarkerStyle
+        );
+        featureInfoHighlightLayer.removeAllFeatures();
+        streetViewMarkerStyle.rotation = 0;
+        featureInfoHighlightLayer.addFeatures(marker);
+
+        // Configure panorama and associate methods and parameters to it
+        var options = {
+            position: new google.maps.LatLng(locWgs.lat, locWgs.lon),
+            pov: {
+                heading: 0,
+                pitch: 0,
+                zoom: 1
+            }
+        };
+
+        //panorama = new gxp.GoogleStreetViewPanel({
+        //    location: location
+        //})
+
+        panorama = new google.maps.StreetViewPanorama(
+            panel.body.dom, options
+        );
+
+        panel.add(panorama);
+        panel.expand();
+
+        //alert(sw.getStatus());
+
+
+        google.maps.event.addListener(panorama, 'position_changed', function() {
+            newLoc = panorama.getPosition();
+            x2 = new OpenLayers.LonLat(newLoc.lng(),newLoc.lat());
+            x2.transform(
+                new OpenLayers.Projection("EPSG:4326"),
+                new OpenLayers.Projection(authid)
+            );
+            marker.move(x2);
+        });
+
+        google.maps.event.addListener(panorama, 'pov_changed', function() {
+            //panorama.getPov().heading;
+            //panorama.getPov().pitch;
+
+            streetViewMarkerStyle.rotation = panorama.getPov().heading;
+            featureInfoHighlightLayer.removeAllFeatures();
+            featureInfoHighlightLayer.addFeatures(marker);
+
+        });
+
+
+    }
+
+
+     geoExtMap.map.addControl(StreetViewControl);
+
+
+ }
 
 // called when DOM is ready (Ext.onReady in WebgisInit.js)
 function customPostLoading() {

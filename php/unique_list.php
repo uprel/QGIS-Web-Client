@@ -8,7 +8,7 @@
     @license: GNU AGPL, see COPYING for details.
 */
 
-require_once(dirname(__FILE__). '/config.php');
+//require_once(dirname(__FILE__). '/config.php');
 require_once(dirname(__FILE__). '/helpers.php');
 
 // Params

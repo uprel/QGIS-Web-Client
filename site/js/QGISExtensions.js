@@ -1,9 +1,9 @@
 /*
  *
- * QGISExtensions.js -- part of Quantum GIS Web Client
+ * QGISExtensions.js -- part of QGIS Web Client
  *
  * Copyright (2010-2012), The QGIS Project All rights reserved.
- * Quantum GIS Web Client is released under a BSD license. Please see
+ * QGIS Web Client is released under a BSD license. Please see
  * https://github.com/qgis/qgis-web-client/blob/master/README
  * for the full text of the license and the list of contributors.
  *
@@ -809,14 +809,20 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
 
       if (this.useWmsRequest) {
 
-          //alert(Ext.getCmp('table_'+this.queryLayer));
+          //alert(maskElement.id);
           //check if we already have table for layer in case of open table call
-          if(Ext.getCmp('table_'+this.queryLayer)==undefined) {
-              this.submitGetFeatureInfo();
-              maskElement.el.mask(pleaseWaitString[lang], 'x-mask-loading');
+          if(maskElement.id=='BottomPanel') {
+              if(Ext.getCmp('table_'+this.queryLayer)==undefined) {
+                  this.submitGetFeatureInfo();
+                  maskElement.el.mask(pleaseWaitString[lang], 'x-mask-loading');
+              }
+              else {
+                  maskElement.activate(Ext.getCmp('table_'+this.queryLayer));
+              }
           }
           else {
-              maskElement.activate(Ext.getCmp('table_'+this.queryLayer));
+              this.submitGetFeatureInfo();
+              maskElement.el.mask(pleaseWaitString[lang], 'x-mask-loading');
           }
 
     } else {
@@ -834,7 +840,10 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
       // Only add if not blank
       if(fieldValues[key]){
         var filterOp = field.initialConfig.filterOp ? field.initialConfig.filterOp : "=";
-        if (field.isXType('numberfield') || field.isXType('combo')) {
+
+        //uros just number without quotes
+        //if (field.isXType('numberfield') || field.isXType('combo')) {
+        if (field.isXType('numberfield')) {
           valueQuotes = "";
         }
         else {
@@ -892,7 +901,9 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
 
   onSuccess: function(response) {
     if (this.featureInfoParser.parseXML(response)) {
-      var features = this.featureInfoParser.featuresArray();
+      var fIP = this.featureInfoParser;
+      var features = fIP.featuresArray();
+      var fields = fIP.featureFields();
 
       // workaround for missing subsequent grid panel updates if first search result was empty:
       // recreate store and grid panel until a search result contains features
@@ -901,23 +912,29 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
       if (this.store == null) {
         // create store
         var storeFields = [];
-        //manually add field feature_id and bbox since they are not in wmsLoader...
+
+        //manually add field feature_id, bbox (and geometry if exists) since they are not in wmsLoader...
         storeFields.push({name: 'feature_id'});
 
-        var featureFields = wmsLoader.layerProperties[this.queryLayer].attributes;
-        for (var i=0; i<featureFields.length; i++) {
-            var fieldType = featureFields[i].type;
+        var wmsLayerFields = wmsLoader.layerProperties[this.queryLayer].attributes;
+        for (var i=0; i<wmsLayerFields.length; i++) {
+
+            var fieldType = wmsLayerFields[i].type;
             if(fieldType=='int' || fieldType=='date' || fieldType=='boolean') {
-                storeFields.push({name: featureFields[i].name,type:fieldType});
+                storeFields.push({name: wmsLayerFields[i].name,type:fieldType});
             }
             else {
                 if (fieldType == 'double') {
-                    storeFields.push({name: featureFields[i].name, type: 'float'});
+                    storeFields.push({name: wmsLayerFields[i].name, type: 'float'});
                 } else {
-                    storeFields.push({name: featureFields[i].name});
+                    storeFields.push({name: wmsLayerFields[i].name});
                 }
             }
         }
+
+          if(fields.indexOf('geometry')>-1) {
+              storeFields.push({name: 'geometry'});
+          }
         storeFields.push({name: 'bbox'});
 
         this.store = new Ext.ux.data.PagingArrayStore({
@@ -977,6 +994,7 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
   onRowClick: function(grid, rowIndex, e) {
     var record = grid.store.getAt(rowIndex);
     var bbox = record.data.bbox;
+    var geom = record.data.geometry;
     if (bbox != null) {
       var id = record.id;
       var x = (bbox.minx + bbox.maxx) / 2.0;
@@ -985,7 +1003,7 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
       if (this.hasOwnProperty('doZoomToExtent')){
         doZoomToExtent = this.doZoomToExtent;
       }
-      this.fireEvent("featureselected", {"layer":this.selectionLayer, "id":id, "x":x, "y":y, "bbox":new OpenLayers.Bounds(bbox.minx,bbox.miny,bbox.maxx,bbox.maxy), "zoom":this.selectionZoom, "doZoomToExtent":doZoomToExtent});
+      this.fireEvent("featureselected", {"layer":this.selectionLayer, "id":id, "x":x, "y":y, "geometry": geom, "bbox":new OpenLayers.Bounds(bbox.minx,bbox.miny,bbox.maxx,bbox.maxy), "zoom":this.selectionZoom, "doZoomToExtent":doZoomToExtent});
     }
   }
 });

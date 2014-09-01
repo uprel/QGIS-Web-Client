@@ -250,20 +250,19 @@ var symbolizersHighLightLayer = {
   "Point": {
     pointRadius: 4,
     graphicName: "circle",
-    fillColor: "#FF8C00",
-    fillOpacity: 0.3,
-    strokeWidth: 1,
-    strokeColor: "#FF8C00"
+    fillColor: "none",
+    strokeWidth: 4,
+    strokeColor: "#00FFFF"
   },
   "Line": {
-    strokeWidth: 3,
+    strokeWidth: 4,
     strokeOpacity: 1,
-    strokeColor: "#FF8C00",
-    strokeDashstyle: "dash"
+    strokeColor: "#00FFFF"
+    //strokeDashstyle: "dash"
   },
   "Polygon": {
-    strokeWidth: 2,
-    strokeColor: "#FF8C00",
+    strokeWidth: 4,
+    strokeColor: "#00FFFF",
     fillColor: "none"
   }
 };
@@ -293,3 +292,29 @@ var sketchSymbolizersMeasureControls = {
     fillOpacity: 0.3
   }
 };
+
+//other styles
+var locationAccuracyStyle = {
+    fillColor: '#000',
+    fillOpacity: 0.1,
+    strokeWidth: 0
+};
+
+var locationMarkerStyle = {
+    graphicName: 'cross',
+    strokeColor: '#f00',
+    strokeWidth: 2,
+    fillOpacity: 0,
+    pointRadius: 10
+};
+
+var streetViewMarkerStyle = {
+    graphicName: "arrow",
+    strokeColor: '#333333',
+    fillColor: '#FF9900',
+    strokeWidth: 2,
+    pointRadius: 8,
+    rotation: 0
+};
+
+OpenLayers.Renderer.symbol.arrow = [0, 4, 2, 0, 4, 4, 2, 3, 0, 4];
