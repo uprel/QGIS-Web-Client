@@ -197,6 +197,7 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 							region: 'south',
 							xtype: 'qgis_layerorderpanel',
 							id: 'LayerOrderTab',
+                            title: layerOrderPanelTitleString[lang],
 							split: true,
 							collapsible: true,
 							collapsed: true,

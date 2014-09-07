@@ -11,14 +11,21 @@
 
 
 require_once(dirname(__FILE__). '/config.php');
+require_once('../../admin/settings.php');
 require_once(dirname(__FILE__). '/helpers.php');
 
 
+
 // Params
-$map = get_map_path(@$_REQUEST['map']);
+if(isset($_REQUEST['map'])) {
+    $map = $_REQUEST['map'];
+}
+else {
+    die('No map');
+}
 $query = trim(@$_REQUEST['query']);
 // Get project
-$project = get_project($map);
+$project = get_project(PROJECT_PATH . $map . '.qgs');
 
 if (defined('THEMES_CHOOSABLE') && THEMES_CHOOSABLE) {
     $selectable = "1";
@@ -26,6 +33,13 @@ if (defined('THEMES_CHOOSABLE') && THEMES_CHOOSABLE) {
 } else {
     $selectable = "0";
     $max_bbox = null;
+}
+
+if(isset($_REQUEST['srs'])) {
+    $srs = $_REQUEST['srs'];
+}
+else {
+    $srs = null;
 }
 
 // WARNING: we are using layer names instead of table names, the
@@ -50,11 +64,16 @@ foreach($_querystrings as $qs){
 /**
  * Build postgis SQL query, here also searchtable is layer name
  */
-function build_postgis_search_query($dbtable, $search_column, $geom_column, $layername, $querystrings, $sql_filter){
-    $sql = "SELECT $search_column as displaytext, '$layername' AS searchtable, '$layername' as search_category, ";
+function build_postgis_search_query($dbtable, $search_column, $display_column, $geom_column, $layername, $querystrings, $sql_filter, $srsid){
+    $transform = $geom_column;
+    if(!empty($srsid)) {
+       $transform="ST_TRANSFORM($geom_column,$srsid)";
+    }
+
+    $sql = "SELECT $search_column AS searchtext, $display_column AS displaytext, '$layername' AS searchtable, '$layername' as search_category, ";
     # the following line is responsible for zooming in to the features
     # this is supposed to work in PostgreSQL since version 9.0
-    $sql .= "'['||replace(regexp_replace(BOX2D($geom_column)::text,'BOX\(|\)','','g'),' ',',')||']'::text AS bbox ";
+    $sql .= "'['||replace(regexp_replace(BOX2D($transform)::text,'BOX\(|\)','','g'),' ',',')||']'::text AS bbox ";
     # if the above line does not work for you, deactivate it and uncomment the next line
     #sql .= "'['||replace(regexp_replace(BOX2D(the_geom)::text,'BOX[(]|[)]','','g'),' ',',')||']'::text AS bbox ";
     $sql .= "FROM ".$dbtable." WHERE ";
@@ -111,10 +130,12 @@ foreach($searchlayers as $layername){
         if($ds_params['provider'] == 'postgres'){
             $sql[] = build_postgis_search_query($ds_params['table'],
                 $searchlayers_config[$layername]['search_column'],
+                $searchlayers_config[$layername]['display_column'],
                 $ds_params['geom_column'],
                 $layername,
                 $querystrings,
-                $ds_params['sql']
+                $ds_params['sql'],
+                $srs
             );
         } else {
             // Spatialite
@@ -138,6 +159,7 @@ if(count($sql)){
         $sql .= ' LIMIT ' . SEARCH_LIMIT;
     }
     $sql .= ';';
+
     // Get connection from the last layer
     $dbh = get_connection($layer, $project, $map);
     $stmt = $dbh->prepare($sql);
@@ -152,7 +174,7 @@ if(count($sql)){
             );
         }
         $row_data[] = array(
-            "displaytext" => $row['displaytext'],"searchtable" => $row['searchtable'],"bbox" => $row['bbox'], "showlayer" => $row['searchtable'], "selectable" => "1"
+            "searchtext" => $row['searchtext'],"displaytext" => $row['displaytext'],"searchtable" => $row['searchtable'],"bbox" => $row['bbox'], "showlayer" => $row['searchtable'], "selectable" => "1"
         );
         $lastSearchCategory = $row['search_category'];
     }
@@ -161,7 +183,8 @@ if(count($sql)){
     $resultString = str_replace(']",','],', $resultString);
 
     #we need to add the name of the callback function if the parameter was specified
-    if ($cb = @$_REQUEST["cb"]){
+    if(isset($_REQUEST['cb'])) {
+        $cb = @$_REQUEST["cb"];
         $resultString = $cb . '(' . $resultString . ')';
     }
     header('Content-type: application/json');

@@ -975,7 +975,10 @@ function postLoading() {
                     highlightLayerName: 'attribHighLight',
                     hasReverseAxisOrder: false, // PostGIS returns bbox' coordinates always x/y
                     width: 300,
-                    searchtables: searchtables
+                    searchtables: searchtables,
+                    url: searchBoxQueryURL,
+                    geomUrl: searchBoxGetGeomURL,
+                    srs: 3857
                 });
             }
             myTopToolbar.insert(myTopToolbar.items.length, qgisSearchCombo);

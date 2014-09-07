@@ -237,12 +237,6 @@ var gis_projects = {"path": "/gisapp/"};
 
 // <------------ No changes should be needed below here ------------------>
 
-//new namespace for QGIS extensions
-//do not modify those three lines
-if (!window.QGIS) {
-  window.QGIS = {};
-}
-
 //styling definitions for highlightLayer
 //is used for hightlighting features (GetFeatureInfo and search result visualization)
 //see http://dev.openlayers.org/releases/OpenLayers-2.10/doc/apidocs/files/OpenLayers/Style-js.html

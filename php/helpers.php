@@ -14,7 +14,7 @@
  * Return 500 errro
  */
 function err500($msg){
-    header('Internal server error', true, 500);
+    //header('Internal server error', true, 500);
     echo "<h1>Internal server error (QGIS Client)</h1><p>$msg</p>";
     exit;
 }

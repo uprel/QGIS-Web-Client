@@ -18,6 +18,12 @@
 * QGIS.LayerOrderPanel
 */
 
+//new namespace for QGIS extensions
+//do not modify those three lines
+if (!window.QGIS) {
+  window.QGIS = {};
+}
+
 /* ************************** QGIS.WMSCapabilitiesLoader ************************** */
 // parse GetProjectSettings from QGIS Mapserver
 // extends GeoExt.tree.WMSCapabilitiesLoader in order to expose the WMSCapabilities Tree to later read out settings from the tree
@@ -445,8 +451,8 @@ QGIS.SearchComboBox = Ext.extend(Ext.form.ComboBox, {
 
   /** config
   */
-  url: searchBoxQueryURL,
-  geomUrl: searchBoxGetGeomURL,
+  url: null,
+  geomUrl: null,
 
   // default Ext.form.ComboBox config
   hideTrigger: false,
@@ -455,10 +461,11 @@ QGIS.SearchComboBox = Ext.extend(Ext.form.ComboBox, {
   displayField: 'label',
   forceSelection: true,
   searchtables: null,
+  srs: null,
 
   initComponent: function() {
-    // i18n
-    this.emptyText = OpenLayers.i18n(searchFieldDefaultTextString[lang]);
+
+    this.emptyText = searchFieldDefaultTextString[lang];
     this.triggerConfig = { // we use a default clear trigger here
               tag: "img", src: Ext.BLANK_IMAGE_URL, cls:'x-form-trigger x-form-clear-trigger'
             };
@@ -474,10 +481,11 @@ QGIS.SearchComboBox = Ext.extend(Ext.form.ComboBox, {
         autoAbort: true
       }),
       baseParams: {
-        searchtables: this.getSearchTables()
+        searchtables: this.getSearchTables(),
+        srs: this.srs
       },
       root: 'results',
-      fields: ['searchtable', 'displaytext', 'bbox', 'showlayer', 'selectable']
+      fields: ['searchtable', 'searchtext', 'displaytext', 'bbox', 'showlayer', 'selectable']
     });
     this.tpl = new Ext.XTemplate(
       '<tpl for="."><div class="x-combo-list-item {service}">',
@@ -565,28 +573,30 @@ QGIS.SearchComboBox = Ext.extend(Ext.form.ComboBox, {
     
     if (bbox != null) {
         var extent = OpenLayers.Bounds.fromArray(bbox, this.hasReverseAxisOrder);
+
         //make sure that map extent is not too small for point data
         //need to improve this for units other than "m", e.g. degrees
-        var extWidth = extent.getWidth();
-        var extHeight = extent.getHeight();
-        if (extWidth < 50) {
-          centerX = extent.left + extWidth * 0.5;
-          extent.left = centerX - 25;
-          extent.right = centerX + 25;
-        }
-        else {
-          extent.left -= extWidth * 0.05;
-          extent.right += extWidth * 0.05;
-        }
-        if (extHeight < 50) {
-          centerY = extent.bottom + extHeight * 0.5;
-          extent.bottom = centerY - 25;
-          extent.top = centerY + 25;
-        }
-        else {
-          extent.bottom -= extHeight = 0.05;
-          extent.top += extHeight = 0.05;
-        }
+//UROS NO POINT IN THIS!
+//        var extWidth = extent.getWidth();
+//        var extHeight = extent.getHeight();
+//        if (extWidth < 50) {
+//          centerX = extent.left + extWidth * 0.5;
+//          extent.left = centerX - 25;
+//          extent.right = centerX + 25;
+//        }
+//        else {
+//          extent.left -= extWidth * 0.05;
+//          extent.right += extWidth * 0.05;
+//        }
+//        if (extHeight < 50) {
+//          centerY = extent.bottom + extHeight * 0.5;
+//          extent.bottom = centerY - 25;
+//          extent.top = centerY + 25;
+//        }
+//        else {
+//          extent.bottom -= extHeight = 0.05;
+//          extent.top += extHeight = 0.05;
+//        }
         //need to check if extent is too small
         this.map.zoomToExtent(extent);
     }
@@ -602,7 +612,8 @@ QGIS.SearchComboBox = Ext.extend(Ext.form.ComboBox, {
       params: {
           searchtable: record.get('searchtable'),
           showlayer: record.get('showlayer'),
-          displaytext: record.get('displaytext')
+          searchtext: record.get('searchtext'),
+          srs: this.srs
         }
       });
     }
@@ -877,7 +888,8 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
         },
         method: 'GET',
         scope: this,
-        success: this.onSuccess
+        success: this.onSuccess,
+        timeout: 60000 //default timeout is 30 sec, increased to 60sec in milisec
       });
     }
     else {
@@ -1166,7 +1178,7 @@ Ext.override(Ext.ToolTip, {
 /* *************************** QGIS.LayerOrderPanel **************************** */
 // extends Ext.Panel with a list of the active layers that can be ordered by the user
 QGIS.LayerOrderPanel = Ext.extend(Ext.Panel, {
-  title: layerOrderPanelTitleString[lang],
+  title: null,
 
   store: null,
   grid: null,

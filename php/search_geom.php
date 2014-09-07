@@ -11,13 +11,27 @@
 
 
 require_once(dirname(__FILE__). '/config.php');
+require_once('../../admin/settings.php');
 require_once(dirname(__FILE__). '/helpers.php');
 
 
 // Params
-$map = get_map_path(@$_REQUEST['map']);
+if(isset($_REQUEST['map'])) {
+    $map = $_REQUEST['map'];
+}
+else {
+die('No map');
+}
+
 $layername = trim(@$_REQUEST['searchtable']);
 $result = "nogeom";
+
+if(isset($_REQUEST['srs'])) {
+    $srs = $_REQUEST['srs'];
+}
+else {
+    $srs = null;
+}
 
 if ($layername != "null") {
     if(array_key_exists($layername, $searchlayers_config)){
@@ -26,23 +40,37 @@ if ($layername != "null") {
         err500('layer not found or not searchable');
     }
 
-    $displaytext = trim(@$_REQUEST['displaytext']);
+
+    $searchtext = trim(@$_REQUEST['searchtext']);
 
     // Get project
-    $project = get_project($map);
+    $project = get_project(PROJECT_PATH . $map . '.qgs');
+
+
 
     // Sanitize
-    $displaytext = preg_replace('/[^A-z0-9_-]\s/', '', $displaytext);
+    $searchtext = preg_replace('/[^A-z0-9_-]\s/', '', $searchtext);
 
     // Get layer
     $layer = get_layer($layername, $project);
 
     $ds_params = get_layer_info($layer, $project);
 
-    $sql = "SELECT ST_AsText(${ds_params['geom_column']}) AS geom FROM " . $ds_params['table'] . " WHERE ${layer_config['search_column']} = ?";
+    $transform = $ds_params['geom_column'];
+
+    if(!empty($srs)) {
+        $srs = $_REQUEST['srs'];
+        $transform="ST_TRANSFORM($transform,$srs)";
+    }
+
+
+    //TODO TO iskanje ni OK, tu bi moralo povezati na ID
+
+
+    $sql = "SELECT ST_AsText($transform) AS geom FROM " . $ds_params['table'] . " WHERE ${layer_config['search_column']} = ?";
     $dbh = get_connection($layer, $project, $map);
     $stmt = $dbh->prepare($sql);
-    $stmt->bindValue(1, $displaytext, PDO::PARAM_STR);
+    $stmt->bindValue(1, $searchtext, PDO::PARAM_STR);
     $stmt->execute();
 
     $row = $stmt->fetch(PDO::FETCH_NUM);
