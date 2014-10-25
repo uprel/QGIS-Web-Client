@@ -888,8 +888,7 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
         },
         method: 'GET',
         scope: this,
-        success: this.onSuccess,
-        timeout: 60000 //default timeout is 30 sec, increased to 60sec in milisec
+        success: this.onSuccess
       });
     }
     else {
