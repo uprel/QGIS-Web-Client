@@ -17,7 +17,7 @@ var allLayers; //later an array containing all leaf layers
 var thematicLayer, highlightLayer, featureInfoHighlightLayer;
 var highLightGeometry = new Array();
 var WMSGetFInfo, WMSGetFInfoHover;
-var lastLayer, lastFeature;
+//var lastLayer, lastFeature;
 var featureInfoResultLayers;
 var measureControls;
 var mainStatusText, rightStatusText;
@@ -25,13 +25,13 @@ var loadMask; //mask displayed during loading or longer operations
 var screenDpi;
 var qgisSearchCombo; //modified search combobox
 var wmsLoader; //modified WMSCapabilitiesLoader from GeoExt
-var xsiNamespace = "http://www.w3.org/2001/XMLSchema-instance";
+//var xsiNamespace = "http://www.w3.org/2001/XMLSchema-instance";
 var hoverPopup = null;
 var clickPopup = null;
 var printWindow;
 var printProvider, printExtent;
 var ptTomm = 0.35277; //conversion pt to mm
-var printScaleCombobox;
+//var printScaleCombobox;
 var coordinateTextField; //reference to number field for coordinate display
 var printLayoutsDefined = false; //true if ComposerTemplates are found in QGIS
 var navHistoryCtrl; //OpenLayers NavigationHistory control
@@ -189,7 +189,7 @@ layerTreeSelectionChangeHandlerFunction = function (selectionModel, treeNode) {
         //change selected activated layers for GetFeatureInfo requests
         layerTree.fireEvent("leafschange");
     }
-}
+};
 
 function postLoading() {
 
@@ -203,7 +203,7 @@ function postLoading() {
     //applyPermalinkParams();
 
     //now set all visible layers and document/toolbar title
-    var layerNode;
+    //var layerNode;
     layerTree.suspendEvents();
     if (layerTree.root.hasChildNodes()) {
         //set titles in document and toolbar
@@ -369,47 +369,9 @@ function postLoading() {
     MapOptions.maxExtent = maxExtent;
 
     //now collect all selected layers (with checkbox enabled in tree)
-    selectedLayers = Array();
-    selectedQueryableLayers = Array();
-    allLayers = Array();
-
-    // prepare the context menu for Layer
-    menuC = new Ext.menu.Menu({
-        id: 'layerContextMenu',
-        items: [{
-            text: contextZoomLayerExtent[lang],
-            iconCls: 'x-zoom-icon',
-            handler: zoomToLayerExtent
-        },{
-            id: 'contextOpenTable',
-            text: contextOpenTable[lang],
-            iconCls: 'x-table-icon',
-            handler: openAttTable
-        },{
-            text: contextDataExport[lang],
-            iconCls: 'x-export-icon',
-            menu: [{
-                id		: 'SHP',
-                text    : 'ESRI Shapefile',
-                handler : exportHandler
-            },{
-                id		: 'DXF',
-                text    : 'AutoCAD DXF',
-                handler : exportHandler
-            },{
-                id		: 'CSV',
-                text    : 'Text CSV',
-                handler : exportHandler
-            }
-                ,"-",
-                {
-                    id      : 'currentExtent',
-                    text    : contextUseExtent[lang],
-                    checked : true,
-                    checkHandler: onItemCheck
-                }]
-        }]
-    });
+    selectedLayers = new Array();
+    selectedQueryableLayers = new Array();
+    allLayers = new Array();
 
     layerTree.root.firstChild.cascade(
         function (n) {
@@ -422,7 +384,9 @@ function postLoading() {
                 }
                 allLayers.push(wmsLoader.layerTitleNameMapping[n.text]);
 
-                // add the context menu
+                //create menu and filter properties from json configuration
+                buildLayerContextMenu(n);
+
                 n.on ('contextMenu', contextMenuHandler);
             }
             else {
@@ -1030,8 +994,8 @@ function postLoading() {
                     }
                 });
             }
-            ;
-        };
+
+        }
 
 
 
@@ -1123,8 +1087,8 @@ function postLoading() {
 
     leafsChangeFunction = function () {
         //now collect all selected queryable layers for WMS request
-        selectedLayers = Array();
-        selectedQueryableLayers = Array();
+        selectedLayers = new Array();
+        selectedQueryableLayers = new Array();
         layerTree.root.firstChild.cascade(
 
             function (n) {
@@ -1145,8 +1109,8 @@ function postLoading() {
         //special case if only active layers are queried for feature infos
         if (identificationMode == 'activeLayers') {
             //only collect selected layers that are active
-            var selectedActiveLayers = Array();
-            var selectedActiveQueryableLayers = Array();
+            var selectedActiveLayers = [];
+            var selectedActiveQueryableLayers = [];
             //need to find active layer
             var activeNode = layerTree.getSelectionModel().getSelectedNode();
             activeNode.cascade(
@@ -1218,7 +1182,7 @@ function postLoading() {
             }
             currentlyVisibleBaseLayer = newVisibleBaseLayer;
         }
-    }
+    };
 
     if (initialLoadDone) {
         layerTree.removeListener("leafschange",leafsChangeFunction);
@@ -1891,7 +1855,8 @@ function mapToolbarHandler(btn, evt) {
             });
         }
         else {
-            openPermaLink(encodeURIComponent(permalink));
+            //openPermaLink(encodeURIComponent(permalink));
+            openPermaLink(permalink);
         }
     }
     if (btn.id == "ShowHelp") {
@@ -2020,7 +1985,7 @@ function scrollToHelpItem(targetId) {
 
 //function that creates a permalink
 function createPermalink(){
-    var visibleLayers = Array();
+    var visibleLayers = [];
     var permalink;
     var permalinkParams = {};
     visibleLayers = getVisibleLayers(visibleLayers, layerTree.root.firstChild);
@@ -2033,7 +1998,7 @@ function createPermalink(){
         var servername = location.href.split(/\/+/)[1];
         permalink = "http://"+servername;
         if (gis_projects) {
-            permalink += gis_projects.path + "/";
+            permalink += gis_projects.path;
         }
         else {
             permalink += "/";
@@ -2077,10 +2042,13 @@ function createPermalink(){
     }
 
     //layer order
-    permalinkParams.initialLayerOrder = layerOrderPanel.orderedLayers().toString();
+    if(showLayerOrderTab) {
+        permalinkParams.initialLayerOrder = layerOrderPanel.orderedLayers().toString();
+    }
 
     // selection
     permalinkParams.selection = thematicLayer.params.SELECTION;
+
     if (permaLinkURLShortener) {
         permalink = encodeURIComponent(permalink + decodeURIComponent(Ext.urlEncode(permalinkParams)));
     }
@@ -2284,11 +2252,21 @@ function activateGetFeatureInfo(doIt) {
 }
 
 function openPermaLink(permalink) {
-    var mailToText = "mailto:?subject="+sendPermalinkLinkFromString[lang]+titleBarText+layerTree.root.firstChild.text+"&body="+permalink;
-    var mailWindow = window.open(mailToText);
-    if (mailWindow){
-        mailWindow.close();
-    } // can be null, if e.g. popus are blocked
+    //var mailToText = "mailto:?subject="+sendPermalinkLinkFromString[lang]+titleBarText+layerTree.root.firstChild.text+"&body="+permalink;
+    //var mailWindow = window.open(mailToText);
+    //if (mailWindow){
+    //    mailWindow.close();
+    if (win){
+        win.close();
+    }
+
+    var win = new Ext.Window({
+        title: sendPermalinkLinkFromString[lang]+titleBarText+layerTree.root.firstChild.text,
+        html: permalink,
+        width: 200
+    }).show();
+
+    //} // can be null, if e.g. popus are blocked
 }
 
 function receiveShortPermalinkFromDB(result, request) {

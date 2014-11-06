@@ -1,11 +1,84 @@
 // *******************
 // CONTEXT MENU STUFF
-// Function to zoom to layer extent - called by context menu on left panel (only on the leafs
-// of tree node)
+// *******************
+
+function buildLayerContextMenu(node) {
+
+    // prepare the generic context menu for Layer
+    var menuCfg = {
+        //id: 'layerContextMenu',
+        items: [{
+            text: contextZoomLayerExtent[lang],
+            iconCls: 'x-zoom-icon',
+            handler: zoomToLayerExtent
+        },{
+            itemId: 'contextOpenTable',
+            text: contextOpenTable[lang],
+            iconCls: 'x-table-icon',
+            handler: openAttTable
+        },{
+            text: contextDataExport[lang],
+            iconCls: 'x-export-icon',
+            menu: [{
+                itemId	: 'SHP',
+                text    : 'ESRI Shapefile',
+                handler : exportHandler
+            },{
+                itemId	: 'DXF',
+                text    : 'AutoCAD DXF',
+                handler : exportHandler
+            },{
+                itemId	: 'CSV',
+                text    : 'Text CSV',
+                handler : exportHandler
+            }
+                ,"-",
+                {
+                    itemId  : 'currentExtent',
+                    text    : contextUseExtent[lang],
+                    checked : true,
+                    checkHandler: onItemCheck
+                }]
+        }]
+    };
+
+    //storefilter
+    var filter=[];
+
+    // add same specific menus if exists
+    if(projectData.layerSpecifics != null) {
+        var layerSpecifics = projectData.layerSpecifics;
+        var j = 0;
+        for (var i = 0; i < layerSpecifics.storedFilters.length; i++) {
+            if (layerSpecifics.storedFilters[i].layer == node.text) {
+                j++;
+                if (j == 1) {
+                    menuCfg.items.push({
+
+                        text: layerSpecifics.storedFilters[i].menuTitle,
+                        menu: []
+                    });
+                }
+                menuCfg.items[menuCfg.items.length - 1].menu.push({
+                    itemId: 'storedFilter_' + j,
+                    text: layerSpecifics.storedFilters[i].title,
+                    handler: openAttTable
+                });
+
+                filter.push({
+                    text: layerSpecifics.storedFilters[i].title,
+                    value: layerSpecifics.storedFilters[i].filterValue
+                });
+            }
+        }
+    }
+    node.menu = new Ext.menu.Menu(menuCfg);
+    node.filter = filter;
+}
+
 function zoomToLayerExtent(item) {
-    var bbox = null;
     var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
-    bbox = new OpenLayers.Bounds(wmsLoader.layerProperties[myLayerName].bbox).transform('EPSG:4326', geoExtMap.map.projection);
+    var bbox = new OpenLayers.Bounds(wmsLoader.layerProperties[myLayerName].bbox).transform('EPSG:4326', geoExtMap.map.projection);
     geoExtMap.map.zoomToExtent(bbox);
 }
 
@@ -37,16 +110,20 @@ function onItemCheck(item, checked){
 
 // Show the menu on right click of the leaf node of the layerTree object
 function contextMenuHandler(node) {
+
+    var layer = node.attributes.text;
+
     //disable option for opentable if layer is not queryable
-    var queryable = true;
-    queryable = wmsLoader.layerProperties[node.attributes.text].queryable;
-    var contTable = Ext.getCmp('contextOpenTable');
+    var queryable = wmsLoader.layerProperties[layer].queryable;
+    //var contTable = Ext.getCmp('contextOpenTable');
+    var contTable = node.menu.getComponent('contextOpenTable');
     if (queryable)
         contTable.setDisabled(false);
     else
         contTable.setDisabled(true);
+
     node.select();
-    menuC.show ( node.ui.getAnchor());
+    node.menu.show ( node.ui.getAnchor());
 }
 
 
@@ -57,12 +134,12 @@ function exportData(layer,format) {
     //Ext.Msg.alert('Info',layer+' ' + bbox);
 
     var exportUrl = "./client/php/export.php?" + Ext.urlEncode({
-        map:projectData.project,
-        SRS:authid,
-        map0_extent:bbox,
-        layer:layer,
-        format:format
-    });
+            map:projectData.project,
+            SRS:authid,
+            map0_extent:bbox,
+            layer:layer,
+            format:format
+        });
 
     var body = Ext.getBody();
     var frame = body.createChild({
@@ -82,21 +159,32 @@ function exportData(layer,format) {
 }
 
 function openAttTable() {
-    var myLayerName = layerTree.getSelectionModel().getSelectedNode().text;
+    var node = layerTree.getSelectionModel().getSelectedNode();
+    var myLayerName = node.text;
+    var idx = null;
+    var filter = null;
 
+    var name = myLayerName;
+
+    //check if user clicked on stored filter for this layer and retrieve it
+    if(this.itemId.indexOf('storedFilter')>-1) {
+        idx = this.itemId.split('_')[1]-1;
+        filter = node.filter[idx].value;
+        name = myLayerName+" ["+node.filter[idx].text + "]";
+    }
 
     var layer = new QGIS.SearchPanel({
         useWmsRequest: true,
+        wmsFilter: filter,
         queryLayer: myLayerName,
         gridColumns: getLayerAttributes(myLayerName),
         gridLocation: 'bottom',
-        gridTitle: myLayerName,
+        gridTitle: name,
         gridResults: 2000,
         gridResultsPageSize: 20,
         selectionLayer: myLayerName,
         formItems: [],
         doZoomToExtent: true
-
     });
 
     //Ext.getCmp('BottomPanel').setTitle(layer.gridTitle,'x-cols-icon');
@@ -223,7 +311,7 @@ function editHandler() {
             editLayer: selectedLayer
         });
 
-         //getfeature request
+        //getfeature request
         var getFeatureRequest = OpenLayers.Request.GET({
             url: wmsURI,
             params: {

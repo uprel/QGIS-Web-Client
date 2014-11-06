@@ -188,7 +188,7 @@ function showFeatureInfoHover(evt) {
                 }
             }
             //case raster layers
-            var rasterAttributeNodes = Array();
+            var rasterAttributeNodes = [];
             var rasterLayerChildNode = layerNodes[i].firstChild;
             while (rasterLayerChildNode) {
                 if (rasterLayerChildNode.nodeName == "Attribute") {
@@ -287,6 +287,8 @@ function removeHoverPopup(){
 }
 
 function showFeatureSelected(args) {
+
+    //TODO UROS tule bi bilo fajn dodati da se vklopi layer če je izklopljen
 
     if(args["geometry"]==undefined) {
         // select feature in layer

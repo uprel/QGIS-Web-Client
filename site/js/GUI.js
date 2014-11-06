@@ -99,7 +99,7 @@ if (headerLogoImg != null) {
  * request, see an example in Customizations.js: function
  * customAfterMapInit()
  * 
- */ 
+ */
 MyViewportUi = Ext.extend(Ext.Viewport, {
 	layout: 'fit',
 	initComponent: function () {
@@ -182,12 +182,12 @@ MyViewportUi = Ext.extend(Ext.Viewport, {
 							region: 'center',
 							collapsible: false,
 							rootVisible: false,
-							//autoScroll: true,
+							autoScroll: true,
 							//containerScroll: true,
 							cls: 'x-tree-noicon',
 							id: 'LayerTree',
 							root: {
-								text: 'Root',
+                                text: 'Root',
 								expanded: true,
 								singleClickExpand: true
 							},
