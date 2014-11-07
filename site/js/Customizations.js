@@ -62,6 +62,42 @@ function customBeforeMapInit() {
 // called after map initialization
 function customAfterMapInit() {
 
+    // Add legend symbols to the toc
+    var treeRoot = layerTree.getNodeById("wmsNode");
+    treeRoot.firstChild.cascade(
+        function (n) {
+            if (n.isLeaf()) {
+                if (n.attributes.checked) {
+                    var legendUrl = wmsURI + Ext.urlEncode({
+                            SERVICE: "WMS",
+                            VERSION: "1.3.0",
+                            REQUEST: "GetLegendGraphics",
+                            FORMAT: "image/png",
+                            EXCEPTIONS: "application/vnd.ogc.se_inimage",
+                            BOXSPACE: 1,
+                            LAYERSPACE: 2,
+                            SYMBOLSPACE: 1,
+                            SYMBOLHEIGHT: 2,
+                            LAYERFONTSIZE: 8,
+                            ITEMFONTSIZE: 8,
+                            ICONLABELSPACE: 2,
+                            LAYERTITLE: "FALSE",
+                            LAYERFONTCOLOR: '#FFFFFF',
+                            LAYERTITLESPACE: 0,
+                            TRANSPARENT: true,
+                            LAYERS: n.text,
+                            DPI: screenDpi
+                        });
+
+                    Ext.DomHelper.insertAfter(n.getUI().getAnchor(),
+                        "<div id='legend_"+n.text.replace(" ", "-")+"'><img style='vertical-align: middle; margin-left: 50px' src=\""+legendUrl+"\"/></div>"
+                    );
+                }
+
+            }
+        }
+    );
+
      // Create a new map control based on Control Click Event
      StreetViewControl = new OpenLayers.Control.Click( {
          trigger: function(e) {
@@ -203,9 +239,47 @@ function customMapToolbarHandler(btn, evt) {
 // called when the user clicks on a check in layerTree.
 // n is a Ext.TreeNode object
 function customActionLayerTreeCheck(n) {
-//    if (n.text == "test layer") {
-//        alert ("test layer check state:" + n.attributes.checked);
-//    }
+    if (n.isLeaf()) {
+        if (n.attributes.checked) {
+            toAdd = Ext.get ( "legend_"+n.text.replace(" ", "-") );
+            if (toAdd) {
+            } else {
+                var legendUrl = wmsURI + Ext.urlEncode({
+                        SERVICE: "WMS",
+                        VERSION: "1.3.0",
+                        REQUEST: "GetLegendGraphics",
+                        FORMAT: "image/png",
+                        EXCEPTIONS: "application/vnd.ogc.se_inimage",
+                        BOXSPACE: 1,
+                        LAYERSPACE: 2,
+                        SYMBOLSPACE: 1,
+                        SYMBOLHEIGHT: 2,
+                        //SYMBOLWIDTH: 4,
+                        LAYERFONTSIZE: 8,
+                        ITEMFONTSIZE: 8,
+                        ICONLABELSPACE: 2,
+                        // LAYERFONTFAMILY: "Adobe Blank",
+                        LAYERTITLE: "FALSE",
+                        LAYERFONTCOLOR: '#FFFFFF',
+                        // 			ITEMFONTCOLOR: '#FFFFFF',
+                        LAYERTITLESPACE: 0,
+                        TRANSPARENT: true,
+                        //ITEMFONTSIZE: 0,
+                        LAYERS: n.text,
+                        DPI: screenDpi
+                    });
+
+                Ext.DomHelper.insertAfter(n.getUI().getAnchor(),
+                    "<div id='legend_"+n.text.replace(" ", "-")+"'><img style='vertical-align: middle; margin-left: 50px' src=\""+legendUrl+"\"/></div>"
+                );
+            }
+        } else {
+            toRemove = Ext.get ( "legend_"+n.text.replace(" ", "-") )
+            if (toRemove)
+                toRemove.remove();
+
+        }
+    }
 }
 
 

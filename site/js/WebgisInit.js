@@ -301,7 +301,7 @@ function postLoading() {
 
         // add components to tree nodes while tree is expanded to match GUI layout
         // info buttons in layer tree
-        addInfoButtonsToLayerTree();
+        //addInfoButtonsToLayerTree();
 
         //expand first level
         layerTree.root.firstChild.collapseChildNodes(true);
@@ -1098,6 +1098,8 @@ function postLoading() {
                         selectedQueryableLayers.push(wmsLoader.layerTitleNameMapping[n.text]);
                     }
                 }
+                // Call custom action in Customizations.js
+                customActionLayerTreeCheck(n);
             });
         format = imageFormatForLayers(selectedLayers);
         updateLayerOrderPanel();
