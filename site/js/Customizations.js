@@ -199,3 +199,25 @@ function customMapToolbarHandler(btn, evt) {
 //         }
 //     }
 }
+
+// called when the user clicks on a check in layerTree.
+// n is a Ext.TreeNode object
+function customActionLayerTreeCheck(n) {
+//    if (n.text == "test layer") {
+//        alert ("test layer check state:" + n.attributes.checked);
+//    }
+}
+
+
+// called when the user zooms.
+function customActionOnZoomEvent() {
+	// NOTE: if you define customActionOnMoveEvent() (see below)
+	// that function is called during zooms, too!
+
+	// ... action to do on call
+}
+
+// called after a drag, pan, or zoom completed
+function customActionOnMoveEvent() {
+	// ... action to do on call
+}
