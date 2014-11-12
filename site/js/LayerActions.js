@@ -37,7 +37,7 @@ function buildLayerContextMenu(node) {
                     itemId  : 'currentExtent',
                     text    : contextUseExtent[lang],
                     checked : true,
-                    checkHandler: onItemCheck
+                    hideOnClick: false
                 }]
         }]
     };
@@ -54,15 +54,49 @@ function buildLayerContextMenu(node) {
                 j++;
                 if (j == 1) {
                     menuCfg.items.push({
-
+                        itemId: "mapFilter",
                         text: layerSpecifics.storedFilters[i].menuTitle,
-                        menu: []
+                        checked: false,
+                        hideOnClick: true,
+                        menu: [],
+                        getFilter: function(){
+                            var value=null;
+                            this.menu.cascade(function(i){ if(i.checked){
+                                value=i.value;
+                            } });
+                            return value;
+                        },
+                        listeners: {
+                            checkchange: function() {
+                                if(!this.checked) {
+                                    thematicLayer.params["FILTER"] = "";
+                                    thematicLayer.redraw();
+                                    this.menu.cascade(function(item) {
+                                        if (item.checked) {
+                                            item.setChecked(false);
+                                        }
+                                    })
+                                }
+                            }
+                        }
+
                     });
                 }
                 menuCfg.items[menuCfg.items.length - 1].menu.push({
                     itemId: 'storedFilter_' + j,
                     text: layerSpecifics.storedFilters[i].title,
-                    handler: openAttTable
+                    value: layerSpecifics.storedFilters[i].filterValue,
+                    checked: false,
+                    group: "storedFilters",
+                    handler: applyWMSFilter,
+                    listeners: {
+                        checkchange: function() {
+                            if(this.checked) {
+                                var m = this.parentMenu.parentMenu.getComponent('mapFilter');
+                                m.setChecked(true);
+                            };
+                        }
+                    }
                 });
 
                 filter.push({
@@ -102,11 +136,6 @@ function exportHandler(item) {
 
     }
 }
-
-function onItemCheck(item, checked){
-    //here we should preserve context menu not closing
-}
-
 
 // Show the menu on right click of the leaf node of the layerTree object
 function contextMenuHandler(node) {
@@ -161,23 +190,21 @@ function exportData(layer,format) {
 function openAttTable() {
     var node = layerTree.getSelectionModel().getSelectedNode();
     var myLayerName = node.text;
-    var idx = null;
     var filter = null;
-
     var name = myLayerName;
 
-    //check if user clicked on stored filter for this layer and retrieve it
-    if(this.itemId.indexOf('storedFilter')>-1) {
-        idx = this.itemId.split('_')[1]-1;
-        filter = node.filter[idx].value;
-        name = myLayerName+" ["+node.filter[idx].text + "]";
+    var m = this.parentMenu.getComponent('mapFilter');
+    if (m) {
+        filter = m.getFilter();
     }
+
+    name = myLayerName;// + filter;
 
     var layer = new QGIS.SearchPanel({
         useWmsRequest: true,
         wmsFilter: filter,
         queryLayer: myLayerName,
-        gridColumns: getLayerAttributes(myLayerName),
+        gridColumns: getLayerAttributes(myLayerName).columns,
         gridLocation: 'bottom',
         gridTitle: name,
         gridResults: 2000,
@@ -198,6 +225,15 @@ function openAttTable() {
 
 }
 
+function applyWMSFilter(item) {
+    var idx = item.itemId.split('_')[1]-1;
+    var node = layerTree.getSelectionModel().getSelectedNode();
+    var filter = node.filter[idx].value;
+
+    thematicLayer.params["FILTER"] = node.text+":"+filter;
+    thematicLayer.redraw();
+
+}
 
 
 /**
@@ -207,31 +243,46 @@ function openAttTable() {
  */
 function getLayerAttributes(layer) {
 
-    var ret = [];
+    var ret = {};
+    ret.columns = [];
+    ret.fields = [];
 
     for (var i=0;i<wmsLoader.layerProperties[layer].attributes.length;i++) {
-        ret[i] = {};
-        attribute = wmsLoader.layerProperties[layer].attributes[i];
-        ret[i].header = attribute.name;
-        ret[i].dataIndex = attribute.name;
-        ret[i].menuDisabled = false;
-        ret[i].sortable = true;
-        ret[i].filterable = true;
+        ret.columns[i] = {};
+        //ret.fields[i] = {};
+        var attribute = wmsLoader.layerProperties[layer].attributes[i];
+        var fieldType = attribute.type;
+        if(fieldType=='int' || fieldType=='date' || fieldType=='boolean') {
+            ret.fields.push({name: attribute.name,type:fieldType});
+        }
+        else {
+            if (fieldType == 'double') {
+                ret.fields.push({name: attribute.name, type: 'float'});
+            } else {
+                ret.fields.push({name: attribute.name, type: 'string'});
+            }
+        }
+
+        ret.columns[i].header = attribute.name;
+        ret.columns[i].dataIndex = attribute.name;
+        ret.columns[i].menuDisabled = false;
+        ret.columns[i].sortable = true;
+        ret.columns[i].filterable = true;
         if(attribute.type=='double') {
-            ret[i].xtype = 'numbercolumn';
-            ret[i].format = '0.000,00/i';
-            ret[i].align = 'right';
+            ret.columns[i].xtype = 'numbercolumn';
+            ret.columns[i].format = '0.000,00/i';
+            ret.columns[i].align = 'right';
             //no effect
             //ret[i].style = 'text-align:left'
         }
         if(attribute.type=='int') {
-            ret[i].xtype = 'numbercolumn';
-            ret[i].format = '000';
-            ret[i].align = 'right';
+            ret.columns[i].xtype = 'numbercolumn';
+            ret.columns[i].format = '000';
+            ret.columns[i].align = 'right';
         }
     }
 
-    ret.unshift(new Ext.ux.grid.RowNumberer({width: 32}));
+    ret.columns.unshift(new Ext.ux.grid.RowNumberer({width: 32}));
 
     return ret;
 }
