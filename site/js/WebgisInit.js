@@ -1581,9 +1581,20 @@ function showSearchPanelResults(searchPanelInstance, features) {
 //            }]
         });
 
+        var tt = searchPanelInstance.gridTitle + " ("+searchPanelInstance.store.getTotalCount()+")";
+        if (searchPanelInstance.wmsFilter>"") {
+            tt+=" ["+searchPanelInstance.wmsFilter+"]";
+        }
+
+        //assumption that if we have less than 5 columns in grid we want forceFit (no horizontal scroller)
+        var horFit = false;
+        if (searchPanelInstance.gridColumns.length<5){
+            horFit = true;
+        }
+
         searchPanelInstance.resultsGrid = new Ext.grid.GridPanel({
             id:  searchPanelId,
-            title: searchPanelInstance.gridTitle,
+            title: tt,
             itemId: searchPanelInstance.gridTitle,
             closable: searchPanelInstance.tabClosable,
             collapsible: collapsible,
@@ -1594,7 +1605,7 @@ function showSearchPanelResults(searchPanelInstance, features) {
             sm: new Ext.grid.RowSelectionModel({singleSelect: true}),
             autoHeight: autoHeight, // No vert. scrollbars in popup if true!!
             viewConfig: {
-                forceFit: true
+                forceFit: horFit
             },
             // paging bar on the bottom
             bbar: pagingConfig,
@@ -1670,6 +1681,12 @@ function showSearchPanelResults(searchPanelInstance, features) {
         // Always make sure it's shown and expanded
         searchPanelInstance.resultsGrid.show();
         searchPanelInstance.resultsGrid.collapsible && searchPanelInstance.resultsGrid.expand();
+
+        //zoom to the extent from GetFeatureInfo results
+        // TODO ne funkcionira v redu v primeru točk preveriti
+        var bx = searchPanelInstance.store.getTotalBbox();
+        var bbox = new OpenLayers.Bounds(bx.minx,bx.miny,bx.maxx,bx.maxy);
+        geoExtMap.map.zoomToExtent(bbox,false);
 
     } else {
         // No features: shouldn't we warn the user?

@@ -319,7 +319,7 @@ ThemeSwitcher.prototype.changeTheme = function (dataView, index, node, evt) {
 		if (norewrite) {
 			wmsURI += "?map=" + projData.projectpath + "/" + projData.projectfile + ".qgs&";
 		} else {
-			wmsURI += "/" + projData.projectpath + "/" + projData.projectfile + "?";
+			wmsURI += "/" + projData.projectfile + "?";
 		}
 		wmsMapName = projData.projectpath + "/" + projData.projectfile;
 		//handle visible layers

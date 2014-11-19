@@ -929,6 +929,8 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
             var fIP = this.featureInfoParser;
             var features = fIP.featuresArray();
             var fields = fIP.featureFields();
+            var totalCount = features.length;
+            var totalBbox = fIP.featuresBbox();
 
             // workaround for missing subsequent grid panel updates if first search result was empty:
             // recreate store and grid panel until a search result contains features
@@ -965,7 +967,15 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
                 this.store = new Ext.ux.data.PagingArrayStore({
                     idIndex: 0,
                     fields: storeFields,
-                    lastOptions: {params: {start: 0, limit: this.gridResultsPageSize}}
+                    lastOptions: {params: {start: 0, limit: this.gridResultsPageSize}},
+                    //override with custom value
+                    //we could also use just properties instead of this
+                    getTotalCount: function() {
+                        return totalCount;
+                    },
+                    getTotalBbox: function() {
+                        return totalBbox;
+                    }
                 });
 
             }
