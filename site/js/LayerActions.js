@@ -77,6 +77,10 @@ function buildLayerContextMenu(node) {
                                         }
                                     })
                                 }
+                                var t = Ext.getCmp('table_'+node.text);
+                                if(typeof t == 'object') {
+                                    t.destroy();
+                                }
                             }
                         }
 
@@ -95,6 +99,10 @@ function buildLayerContextMenu(node) {
                                 var m = this.parentMenu.parentMenu.getComponent('mapFilter');
                                 m.setChecked(true);
                             };
+                            var t = Ext.getCmp('table_'+node.text);
+                            if(typeof t == 'object') {
+                                t.destroy();
+                            }
                         }
                     }
                 });
