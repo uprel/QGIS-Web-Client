@@ -39,7 +39,7 @@ function customBeforeMapInit() {
             var layer = new QGIS.SearchPanel({
                 useWmsRequest: true,
                 queryLayer: myLayerName,
-                gridColumns: getLayerAttributes(myLayerName),
+                gridColumns: getLayerAttributes(myLayerName).columns,
                 gridLocation: 'bottom',
                 gridTitle: myLayerName,
                 gridResults: 2000,

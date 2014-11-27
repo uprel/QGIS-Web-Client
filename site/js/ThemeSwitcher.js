@@ -22,15 +22,15 @@ function ThemeSwitcher(parentPanel) {
 	
 	me = this;
 	//create a new jsonstore holding the topic-listing data
-	if (gis_projects) {
+	if (projectData.gis_projects) {
 		//add a new record to json array
-		gis_projects.topics.unshift({
+        projectData.gis_projects.topics.unshift({
 			name: themeSwitcherAllThemesListViewString[lang],
 			projects: []
 		});
 		this.gisTopicListingStore = new Ext.data.JsonStore({
 			storeId: 'gisTopicListingStore',
-			data: gis_projects,
+			data: projectData.gis_projects,
 			// reader configs
 			root: 'topics',
 			idProperty: 'name',
@@ -123,7 +123,7 @@ ThemeSwitcher.prototype.openOrInitialize = function () {
 
 ThemeSwitcher.prototype.initialize = function () {
 	me = this;
-	var template = themeSwitcherTemplate?themeSwitcherTemplate:new Ext.XTemplate('<ul>', '<tpl for=".">', '<li class="project">', '<img width="300" height="200" class="thumbnail" src="thumbnails/{thumbnail}" title="{tooltip}" />', '<tpl if="pwprotected==\'yes\'">', '<img class="pwProtected" src="gis_icons/lockIcon.png" width="32" height="32" />','</tpl>','<strong>{projname}', '<tpl if="pwprotected==\'yes\'">', ' - ' + themeSwitcherTooltipPwProtectedString[lang], '</tpl>', '</strong>', '</li>', '</tpl>', '</ul>');
+	var template = themeSwitcherTemplate?themeSwitcherTemplate:new Ext.XTemplate('<ul>', '<tpl for=".">', '<li class="project">', '<img width="300" height="200" class="thumbnail" src="client/site/thumbnails/{thumbnail}" title="{tooltip}" />', '<tpl if="pwprotected==\'yes\'">', '<img class="pwProtected" src="gis_icons/lockIcon.png" width="32" height="32" />','</tpl>','<strong>{projname}', '<tpl if="pwprotected==\'yes\'">', ' - ' + themeSwitcherTooltipPwProtectedString[lang], '</tpl>', '</strong>', '</li>', '</tpl>', '</ul>');
 
 	//add data view for grid thumbnails view
 	this.projectDataView = new Ext.DataView({
@@ -314,7 +314,7 @@ ThemeSwitcher.prototype.changeTheme = function (dataView, index, node, evt) {
 		if (projData.mapserver) {
 			wmsURI = projData.mapserver;
 		} else {
-			wmsURI = gis_projects.mapserver;
+			wmsURI = projectData.gis_projects.mapserver;
 		}
 		if (norewrite) {
 			wmsURI += "?map=" + projData.projectpath + "/" + projData.projectfile + ".qgs&";
@@ -326,7 +326,7 @@ ThemeSwitcher.prototype.changeTheme = function (dataView, index, node, evt) {
 		if (projData.visibleLayers) {
 			visibleLayers = projData.visibleLayers.split(",");
 		} else {
-			visibleLayers = [];
+			visibleLayers = null;
 		}
 		//handle full color layers
 		if (projData.fullColorLayers) {
@@ -340,10 +340,16 @@ ThemeSwitcher.prototype.changeTheme = function (dataView, index, node, evt) {
 		}
 		origFormat = format;
 		//handle search tables
-		if (projData.searchtables) {
-			searchtables = projData.searchtables;
-		}
-		//handle max extent
+        if (projData.searchtables) {
+            searchtables = projData.searchtables;
+        }
+        else {
+            searchtables = null;
+        }
+        qgisSearchCombo.searchtables = searchtables;
+        qgisSearchCombo.store.baseParams.searchtables = searchtables;
+
+        //handle max extent
 		if (projData.maxExtent) {
 			//need to check validity of maxExtent parameter
 			//can be either "project" or corner coordinates in OpenLayers.Bounds format (left, bottom, right, top)
@@ -366,8 +372,14 @@ ThemeSwitcher.prototype.changeTheme = function (dataView, index, node, evt) {
 		printLayoutsDefined = false;
 		//now load the config of the new project
 		if (urlParamsOK) {
-			loadWMSConfig();
-		} else {
+
+            //projectData is from DB (look LoadAppProjectData)
+            //projData is from gis_projects
+            //set client name
+            projectData.client_display_name = projData.topic;
+
+            loadWMSConfig();
+       } else {
 			alert(errMessageStartupNotAllParamsFoundString[lang]);
 		}
 	}

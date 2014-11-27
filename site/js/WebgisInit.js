@@ -156,6 +156,9 @@ function loadWMSConfig() {
         layerParams: {
             'TRANSPARENT': 'TRUE'
         },
+        //uros fix
+        projectSettings: null,
+        initialVisibleLayers: new Array(),
         // customize the createNode method to add a checkbox to nodes and the ui provider
         createNode: function (attr) {
             attr.checked = false;
@@ -498,7 +501,8 @@ function postLoading() {
         return opacities;
     }
 
-    setupLayerOrderPanel();
+    //Uros don't need this, problem with ThemeSwitcher, GlobalVariable
+    //setupLayerOrderPanel();
 
     //create new map panel with a single OL layer
     selectedLayers = layersInDrawingOrder(selectedLayers);
@@ -2126,6 +2130,7 @@ function applyPermalinkParams() {
     else {
         //see if project is defined in GIS ProjectListing
         //and has an opacities property
+        //TODO UROS: tule brezveze zanka da primerja z project titlom, ker imam že povezavo na projekt alias=projectFile
         if (gis_projects) {
             for (var i=0;i<gis_projects.topics.length;i++) {
                 for (var j=0;j<gis_projects.topics[i].projects.length;j++) {
