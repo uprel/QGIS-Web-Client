@@ -196,6 +196,12 @@ layerTreeSelectionChangeHandlerFunction = function (selectionModel, treeNode) {
 
 function postLoading() {
 
+    //setting up project specific data
+    var initialBGMap = 0;
+    var baseLayers = projectData.setBaseLayers();
+    var extraLayers = projectData.extraLayers();
+    var overviewLayer = projectData.overViewLayer();
+
     // run the function from Customizations.js
     customBeforeMapInit();
 
@@ -549,6 +555,11 @@ function postLoading() {
 
     }
     else {
+        geoExtMap.map.addLayers(baseLayers);
+
+        //this has no effect, TODO fix this that is always rendered below thematic layer
+        //geoExtMap.map.setLayerIndex(thematicLayer,0);
+
         thematicLayer.name = layerTree.root.firstChild.text;
         thematicLayer.url = wmsURI;
         thematicLayer.mergeNewParams({

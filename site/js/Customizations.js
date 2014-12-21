@@ -29,6 +29,8 @@ function customInit() {
 // called before map initialization
 function customBeforeMapInit() {
 
+    var tablesOnStart = projectData.tablesOnStart();
+
     //open tables for layers from db setting
     //tabs for this tables cannot be closed and are marked for editing
     //only fields checked as WFS in qgis project

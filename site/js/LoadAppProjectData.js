@@ -33,35 +33,99 @@ var autoActivateSearchGeometryLayer = true;
 var enablePermalink = true;
 var permaLinkURLShortener = null; // "/wsgi/createShortPermalink.wsgi";
 
-var baseLayers = [];
-var extraLayers = [];
-var tablesOnStart = [];
-var overviewLayer;
-var enableBGMaps = false;
+var enableBGMaps = true;
 var enableExtraLayers = false;
-var initialBGMap = 0;
-			
-if(projectData.base_layers != null) {
-	for(var i = 0; i < projectData.base_layers.length; i++) {
-		baseLayers.push(eval(projectData.base_layers[i]));
+
+projectData.setBaseLayers = function() {
+    var baseLayers = [];
+    //find client projects
+    for(var i = 0; i < projectData.gis_projects.topics.length; i++) {
+		var topic = projectData.gis_projects.topics[i];
+        if(topic.client == this.client_name) {
+            for(var j = 0; j < topic.projects.length; j++) {
+                var project = topic.projects[j];
+                if (project.projectfile == this.project) {
+                    if(project.base_layers != null) {
+                        for (var k = 0; k < project.base_layers.length; k++) {
+                            baseLayers.push(eval(project.base_layers[k]));
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        }
 	}
-	enableBGMaps = true;
-}
 
-if(projectData.extra_layers != null) {
-    for(var j = 0; j < projectData.extra_layers.length; j++) {
-        extraLayers.push(eval(projectData.extra_layers[j]));
+    if(baseLayers.length>0) enableBGMaps=true;
+
+    return baseLayers;
+};
+
+projectData.extraLayers = function() {
+    var extraLayers = [];
+    //find client projects
+    for(var i = 0; i < projectData.gis_projects.topics.length; i++) {
+        var topic = projectData.gis_projects.topics[i];
+        if(topic.client == this.client_name) {
+            for(var j = 0; j < topic.projects.length; j++) {
+                var project = topic.projects[j];
+                if (project.projectfile == this.project) {
+                    if(project.extra_layers != null) {
+                        for (var k = 0; k < project.extra_layers.length; k++) {
+                            extraLayers.push(eval(project.extra_layers[k]));
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        }
     }
-    enableExtraLayers = true;
-}
 
-if(projectData.tables_onstart != null) {
-    for(var k = 0; k < projectData.tables_onstart.length; k++) {
-        tablesOnStart.push(projectData.tables_onstart[k]);
+    if(extraLayers.length>0) enableExtraLayers=true;
+
+    return extraLayers;
+};
+
+projectData.tablesOnStart = function() {
+    var tablesOnStart = [];
+    //find client projects
+    for(var i = 0; i < projectData.gis_projects.topics.length; i++) {
+        var topic = projectData.gis_projects.topics[i];
+        if(topic.client == this.client_name) {
+            for(var j = 0; j < topic.projects.length; j++) {
+                var project = topic.projects[j];
+                if (project.projectfile == this.project) {
+                    if(project.tables_onstart != null) {
+                        for (var k = 0; k < project.tables_onstart.length; k++) {
+                            tablesOnStart.push(project.tables_onstart[k]);
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
+    return tablesOnStart;
+};
+
+projectData.overViewLayer = function() {
+    //find client projects
+    for(var i = 0; i < projectData.gis_projects.topics.length; i++) {
+        var topic = projectData.gis_projects.topics[i];
+        if(topic.client == this.client_name) {
+            for(var j = 0; j < topic.projects.length; j++) {
+                var project = topic.projects[j];
+                if (project.projectfile == this.project) {
+                    return eval(project.overview_layer[0]);
+                }
+            }
+        }
     }
 }
-
-overviewLayer = eval(projectData.overview_layer);
 
 var mediaurl = '';
 var suppressEmptyValues = true;

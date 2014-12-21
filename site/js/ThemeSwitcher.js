@@ -34,7 +34,7 @@ function ThemeSwitcher(parentPanel) {
 			// reader configs
 			root: 'topics',
 			idProperty: 'name',
-			fields: ['name', 'projects']
+			fields: ['name', 'projects', 'client']
 		});
 		//fill a new array store with all project records
 		//will be used to display a table of thumbnails
@@ -46,6 +46,7 @@ function ThemeSwitcher(parentPanel) {
 			for (var j = 0; j < topicRec.data.projects.length; j++) {
 				var projData = topicRec.data.projects[j];
 				projData.topic = topicRec.data.name;
+                projData.client = topicRec.data.client;
 				var tooltip = themeSwitcherTooltipMapThemeString[lang] + projData.name;
 				if (projData.tags) {
 					tooltip += "\n" + themeSwitcherTooltipTagString[lang] + projData.tags;
@@ -370,13 +371,41 @@ ThemeSwitcher.prototype.changeTheme = function (dataView, index, node, evt) {
 		initialLayerOrder = null;
 		//set printLayoutsDefined to false - will be loaded after theme switch
 		printLayoutsDefined = false;
+        //delete maxExtent
+        maxExtent = null;
+
+        enableExtraLayers = false;
+
+        //remove base layers
+        //get base layers name
+        var baseLayers = [];
+        layerTree.root.lastChild.cascade(
+            function (n) {
+                if (n.isLeaf()) {
+                    baseLayers.push(n.text);
+                }
+            });
+
+        for(var x=0;x<baseLayers.length;x++){
+            var layerToRemove = geoExtMap.map.getLayersByName(baseLayers[x])[0];
+            if (layerToRemove!=null) {
+                geoExtMap.map.removeLayer(layerToRemove,false);
+                layerToRemove = null;
+            }
+        }
+
+        //remove visible tables if exist
+        var bottomPanel = Ext.getCmp('BottomPanel');
+        bottomPanel.removeAll();
+
 		//now load the config of the new project
 		if (urlParamsOK) {
 
             //projectData is from DB (look LoadAppProjectData)
             //projData is from gis_projects
-            //set client name
             projectData.client_display_name = projData.topic;
+            projectData.client_name = projData.client;
+            projectData.project = projData.projectfile;
 
             loadWMSConfig();
        } else {
