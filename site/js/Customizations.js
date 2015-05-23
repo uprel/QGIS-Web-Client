@@ -194,7 +194,7 @@ function customAfterMapInit() {
         //    location: location
         //})
 
-        panorama = new google.maps.StreetViewPanorama(
+        var panorama = new google.maps.StreetViewPanorama(
             panel.body.dom, options
         );
 

@@ -57,6 +57,8 @@ var measurePopup;
 var currentlyVisibleBaseLayer = null;
 var layerImageFormats = layerImageFormats || []; // use config from GlobalOptions if any
 
+var enableStreetView = false;
+
 // Call custom Init in Customizations.js
 customInit();
 
@@ -825,11 +827,11 @@ function postLoading() {
             icon: 'gis_icons/mActionStreetView.png',
             id: 'streetViewBtn',
             scale: 'medium',
-			//TODO TRANSLATE
-            tooltip: 'GoogleStreetView način',
+            tooltip: 'GoogleStreetView',
             tooltipType: 'qtip',
             toggleGroup: 'mapTools',
             enableToggle: true,
+            allowDepress: true,
             handler: mapToolbarHandler
         });
 
@@ -849,6 +851,8 @@ function postLoading() {
             map: geoExtMap.map,
             tooltip: showLocationTooltipString[lang],
             tooltipType: 'qtip',
+            enableToggle: false,
+            allowDepress: true,
             handler: mapToolbarHandler
         });
         myTopToolbar.insert(100, geoLocateAction,streetView);
@@ -931,11 +935,12 @@ function postLoading() {
                     minChars: 2,
                     loadingText: geonamesLoadingString[lang],
                     emptyText: geonamesEmptyString[lang],
-                    zoom: 14,
-                    //lang: lang,
-                    featureClassString: 'featureClass=P&featureClass=H&featureClass=L&featureClass=T&featureClass=V',
-                    countryString: 'country=SI&',
-                    tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name}</h3>{adminName1}&nbsp;</div></tpl>',
+                    lang: lang,
+                    zoom: projectData.geoNames.zoom,
+                    featureClassString: projectData.geoNames.featureClassString,
+                    countryString: projectData.geoNames.countryString,
+                    tpl: '<tpl for="."><div class="x-combo-list-item"><h3>{name}</h3>{adminName1} - {countryName}</div></tpl>',
+                    continentCode: projectData.geoNames.continentCode,
                     username: geoNamesUserName
                 });
                 //disabling button for resetting search, not needed, not working
@@ -1117,7 +1122,7 @@ function postLoading() {
                 customActionLayerTreeCheck(n);
             });
         format = imageFormatForLayers(selectedLayers);
-        updateLayerOrderPanel();
+        //updateLayerOrderPanel();
 
         //change array order
         selectedLayers = layersInDrawingOrder(selectedLayers);
@@ -1596,7 +1601,7 @@ function showSearchPanelResults(searchPanelInstance, features) {
 //            }]
         });
 
-        var tt = searchPanelInstance.gridTitle + " ("+searchPanelInstance.store.getTotalCount()+")";
+        var tt = searchPanelInstance.gridTitle + " ("+searchPanelInstance.store.totalCount+")";
         if (searchPanelInstance.wmsFilter>"") {
             tt+=" ["+searchPanelInstance.wmsFilter+"]";
         }
@@ -1698,8 +1703,7 @@ function showSearchPanelResults(searchPanelInstance, features) {
         searchPanelInstance.resultsGrid.collapsible && searchPanelInstance.resultsGrid.expand();
 
         //zoom to the extent from GetFeatureInfo results
-        // TODO ne funkcionira v redu v primeru točk preveriti
-        var bx = searchPanelInstance.store.getTotalBbox();
+        var bx = searchPanelInstance.store.totalBbox;
         var bbox = new OpenLayers.Bounds(bx.minx,bx.miny,bx.maxx,bx.maxy);
         geoExtMap.map.zoomToExtent(bbox,false);
 
@@ -1782,6 +1786,10 @@ function mapToolbarHandler(btn, evt) {
 
     if (btn.id == "IdentifyTool") {
         if (btn.pressed) {
+            if(enableStreetView)    {
+                StreetViewControl.deactivate();
+            }
+
             identifyToolActive = true;
             activateGetFeatureInfo(true);
             mainStatusText.setText(modeObjectIdentificationString[lang]);
@@ -1951,11 +1959,14 @@ function mapToolbarHandler(btn, evt) {
     if(btn.id == 'streetViewBtn') {
         if (btn.pressed) {
             StreetViewControl.activate();
+            mainStatusText.setText(modeStreetViewString[lang]);
+            enableStreetView = true;
         }
         else
         {
             StreetViewControl.deactivate();
             featureInfoHighlightLayer.removeAllFeatures();
+            mainStatusText.setText(modeNavigationString[lang]);
         }
     }
 }
@@ -2161,117 +2172,117 @@ function applyPermalinkParams() {
     }
 }
 
-function setupLayerOrderPanel() {
-    layerOrderPanel = Ext.getCmp('LayerOrderTab');
+//function setupLayerOrderPanel() {
+//    layerOrderPanel = Ext.getCmp('LayerOrderTab');
+//
+//    /* initial layer order: (highest priority on top)
+//     * - initialLayerOrder from permalink/URL param
+//     * - layerDrawingOrder from GetProjectSettings
+//     * - layer tree from GetCapabilities
+//     */
+//    var orderedLayers = [];
+//    if (initialLayerOrder != null) {
+//        // use order from permalink or URL parameter
+//        orderedLayers = initialLayerOrder;
+//        //TODO: we need to add additional layers if the initialLayerOrder is shorter than the layerDrawingOrder from the project
+//        if (wmsLoader.projectSettings.capability.layerDrawingOrder != null) {
+//            //case GetProjectSettings supported
+//            if (initialLayerOrder.length < wmsLoader.projectSettings.capability.layerDrawingOrder.length) {
+//                for (var i=0;i<wmsLoader.projectSettings.capability.layerDrawingOrder.length;i++) {
+//                    if (orderedLayers.indexOf(wmsLoader.projectSettings.capability.layerDrawingOrder[i]) == -1) {
+//                        var layerIndex = wmsLoader.projectSettings.capability.layerDrawingOrder.indexOf(wmsLoader.projectSettings.capability.layerDrawingOrder[i]);
+//                        if (layerIndex >= orderedLayers.length) {
+//                            orderedLayers.push(wmsLoader.projectSettings.capability.layerDrawingOrder[i]);
+//                        }
+//                        else {
+//                            orderedLayers.splice(layerIndex,0,wmsLoader.projectSettings.capability.layerDrawingOrder[i]);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        else {
+//            //only GetCapabilities is supported
+//            if (initialLayerOrder.length < allLayers.length) {
+//                for (var i=0;i<allLayers.length;i++) {
+//                    if (orderedLayers.indexOf(allLayers[i]) == -1) {
+//                        var layerIndex = allLayers.indexOf(allLayers[i]);
+//                        if (layerIndex >= orderedLayers.length) {
+//                            orderedLayers.push(allLayers[i]);
+//                        }
+//                        else {
+//                            orderedLayers.splice(layerIndex,0,allLayers[i]);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    else if (wmsLoader.projectSettings.capability.layerDrawingOrder != null) {
+//        // use order from GetProjectSettings
+//        orderedLayers = wmsLoader.projectSettings.capability.layerDrawingOrder;
+//    }
+//    else {
+//        // use order from GetCapabilities
+//        orderedLayers = allLayers.reverse();
+//    }
+//
+//    layerOrderPanel.clearLayers();
+//    for (var i=0; i<orderedLayers.length; i++) {
+//        //because of a but in QGIS server we need to check if a layer from layerDrawingOrder actually really exists
+//        //QGIS server is delivering invalid layer when linking to different projects
+//        if (wmsLoader.layerProperties[orderedLayers[i]]) {
+//            layerOrderPanel.addLayer(orderedLayers[i], wmsLoader.layerProperties[orderedLayers[i]].opacity);
+//        }
+//    }
+//
+//    if (!initialLoadDone) {
+//        if (showLayerOrderTab) {
+//            // handle layer order panel events
+//            layerOrderPanel.on('layerVisibilityChange', function(layer) {
+//                // deactivate layer node in layer tree
+//                layerTree.root.findChildBy(function() {
+//                    if (wmsLoader.layerTitleNameMapping[this.attributes["text"]] == layer) {
+//                        this.getUI().toggleCheck();
+//                        // update active layers
+//                        layerTree.fireEvent("leafschange");
+//                        return true;
+//                    }
+//                    return false;
+//                }, null, true);
+//            });
+//
+//            layerOrderPanel.on('orderchange', function() {
+//                // update layer order after drag and drop
+//                layerTree.fireEvent("leafschange");
+//            });
+//
+//            layerOrderPanel.on('opacitychange', function(layer, opacity) {
+//                // update layer opacities after slider change
+//                wmsLoader.layerProperties[layer].opacity = opacity;
+//                layerTree.fireEvent("leafschange");
+//            });
+//            //hack to set title of southern panel - normally it is hidden in ExtJS
+//            Ext.layout.BorderLayout.Region.prototype.getCollapsedEl = Ext.layout.BorderLayout.Region.prototype.getCollapsedEl.createSequence(function() {
+//                if ( ( this.position == 'south' ) && !this.collapsedEl.titleEl ) {
+//                    this.collapsedEl.titleEl = this.collapsedEl.createChild({cls: 'x-collapsed-title', cn: this.panel.title});
+//                }
+//            });
+//            Ext.getCmp('leftPanelMap').layout.south.getCollapsedEl().titleEl.dom.innerHTML = layerOrderPanelTitleString[lang];
+//        } else {
+//            Ext.getCmp('leftPanelMap').layout.south.getCollapsedEl().setVisible(showLayerOrderTab);
+//        }
+//    }
+//}
 
-    /* initial layer order: (highest priority on top)
-     * - initialLayerOrder from permalink/URL param
-     * - layerDrawingOrder from GetProjectSettings
-     * - layer tree from GetCapabilities
-     */
-    var orderedLayers = [];
-    if (initialLayerOrder != null) {
-        // use order from permalink or URL parameter
-        orderedLayers = initialLayerOrder;
-        //TODO: we need to add additional layers if the initialLayerOrder is shorter than the layerDrawingOrder from the project
-        if (wmsLoader.projectSettings.capability.layerDrawingOrder != null) {
-            //case GetProjectSettings supported
-            if (initialLayerOrder.length < wmsLoader.projectSettings.capability.layerDrawingOrder.length) {
-                for (var i=0;i<wmsLoader.projectSettings.capability.layerDrawingOrder.length;i++) {
-                    if (orderedLayers.indexOf(wmsLoader.projectSettings.capability.layerDrawingOrder[i]) == -1) {
-                        var layerIndex = wmsLoader.projectSettings.capability.layerDrawingOrder.indexOf(wmsLoader.projectSettings.capability.layerDrawingOrder[i]);
-                        if (layerIndex >= orderedLayers.length) {
-                            orderedLayers.push(wmsLoader.projectSettings.capability.layerDrawingOrder[i]);
-                        }
-                        else {
-                            orderedLayers.splice(layerIndex,0,wmsLoader.projectSettings.capability.layerDrawingOrder[i]);
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            //only GetCapabilities is supported
-            if (initialLayerOrder.length < allLayers.length) {
-                for (var i=0;i<allLayers.length;i++) {
-                    if (orderedLayers.indexOf(allLayers[i]) == -1) {
-                        var layerIndex = allLayers.indexOf(allLayers[i]);
-                        if (layerIndex >= orderedLayers.length) {
-                            orderedLayers.push(allLayers[i]);
-                        }
-                        else {
-                            orderedLayers.splice(layerIndex,0,allLayers[i]);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else if (wmsLoader.projectSettings.capability.layerDrawingOrder != null) {
-        // use order from GetProjectSettings
-        orderedLayers = wmsLoader.projectSettings.capability.layerDrawingOrder;
-    }
-    else {
-        // use order from GetCapabilities
-        orderedLayers = allLayers.reverse();
-    }
-
-    layerOrderPanel.clearLayers();
-    for (var i=0; i<orderedLayers.length; i++) {
-        //because of a but in QGIS server we need to check if a layer from layerDrawingOrder actually really exists
-        //QGIS server is delivering invalid layer when linking to different projects
-        if (wmsLoader.layerProperties[orderedLayers[i]]) {
-            layerOrderPanel.addLayer(orderedLayers[i], wmsLoader.layerProperties[orderedLayers[i]].opacity);
-        }
-    }
-
-    if (!initialLoadDone) {
-        if (showLayerOrderTab) {
-            // handle layer order panel events
-            layerOrderPanel.on('layerVisibilityChange', function(layer) {
-                // deactivate layer node in layer tree
-                layerTree.root.findChildBy(function() {
-                    if (wmsLoader.layerTitleNameMapping[this.attributes["text"]] == layer) {
-                        this.getUI().toggleCheck();
-                        // update active layers
-                        layerTree.fireEvent("leafschange");
-                        return true;
-                    }
-                    return false;
-                }, null, true);
-            });
-
-            layerOrderPanel.on('orderchange', function() {
-                // update layer order after drag and drop
-                layerTree.fireEvent("leafschange");
-            });
-
-            layerOrderPanel.on('opacitychange', function(layer, opacity) {
-                // update layer opacities after slider change
-                wmsLoader.layerProperties[layer].opacity = opacity;
-                layerTree.fireEvent("leafschange");
-            });
-            //hack to set title of southern panel - normally it is hidden in ExtJS
-            Ext.layout.BorderLayout.Region.prototype.getCollapsedEl = Ext.layout.BorderLayout.Region.prototype.getCollapsedEl.createSequence(function() {
-                if ( ( this.position == 'south' ) && !this.collapsedEl.titleEl ) {
-                    this.collapsedEl.titleEl = this.collapsedEl.createChild({cls: 'x-collapsed-title', cn: this.panel.title});
-                }
-            });
-            Ext.getCmp('leftPanelMap').layout.south.getCollapsedEl().titleEl.dom.innerHTML = layerOrderPanelTitleString[lang];
-        } else {
-            Ext.getCmp('leftPanelMap').layout.south.getCollapsedEl().setVisible(showLayerOrderTab);
-        }
-    }
-}
-
-function updateLayerOrderPanel() {
-    // update layer order panel
-    var layersForOrderPanel = [];
-    layersForOrderPanel = layersForOrderPanel.reverse();
-    for (var i=0; i<layersForOrderPanel.length; i++) {
-        layerOrderPanel.addLayer(layersForOrderPanel[i], wmsLoader.layerProperties[layersForOrderPanel[i]].opacity);
-    }
-}
+//function updateLayerOrderPanel() {
+//    // update layer order panel
+//    var layersForOrderPanel = [];
+//    layersForOrderPanel = layersForOrderPanel.reverse();
+//    for (var i=0; i<layersForOrderPanel.length; i++) {
+//        layerOrderPanel.addLayer(layersForOrderPanel[i], wmsLoader.layerProperties[layersForOrderPanel[i]].opacity);
+//    }
+//}
 
 function activateGetFeatureInfo(doIt) {
     // activate/deactivate FeatureInfo

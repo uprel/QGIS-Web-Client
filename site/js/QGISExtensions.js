@@ -862,15 +862,14 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
                 // Only add if not blank
                 if (fieldValues[key]) {
                     var filterOp = field.initialConfig.filterOp ? field.initialConfig.filterOp : "=";
-
-                    //uros just number without quotes
-                    //if (field.isXType('numberfield') || field.isXType('combo')) {
+		
                     if (field.isXType('numberfield')) {
-                        valueQuotes = "";
+                            valueQuotes = "";
                     }
                     else {
-                        valueQuotes = "'";
+                            valueQuotes = "'";
                     }
+                    
                     if (field.initialConfig.filterOp.indexOf('LIKE') > -1) {
                         valueExtra = "%";
                     }
@@ -968,16 +967,14 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
                     idIndex: 0,
                     fields: storeFields,
                     lastOptions: {params: {start: 0, limit: this.gridResultsPageSize}},
-                    //override with custom value
-                    //we could also use just properties instead of this
-                    getTotalCount: function() {
-                        return totalCount;
-                    },
-                    getTotalBbox: function() {
-                        return totalBbox;
-                    }
+                    totalCount: totalCount,
+                    totalBbox: totalBbox
                 });
 
+            }
+            else {
+                this.store.totalCount = totalCount;
+                this.store.totalBbox = totalBbox;
             }
 
             // show results, firing events: see Wegbisinit.js

@@ -342,6 +342,23 @@ modeMeasureAreaString["sl"] = "Način: merjenje površine. Zaključi z dvoklikom
 modeMeasureAreaString["nl"] = "Mode: oppervlakte berekenen. Beëindig door te dubbelklikken.";
 modeMeasureAreaString["pl"] = "Tryb: pomiar powierzchni. Kliknij dwukrotnie, aby zakończyć pomiar.";
 
+//mode StreetView
+var modeStreetViewString = new Array();
+modeStreetViewString["en"] = "Mode: GoogleStreetView. Click on the road.";
+modeStreetViewString["es"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["de"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["fr"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["it"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["pt_PT"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["uk"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["hu"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["ro"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["ru"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["sl"] = "Način: GoogleStreetView. Klikni na cesto.";
+modeStreetViewString["nl"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+modeStreetViewString["pl"] = "Mode: GoogleStreetView. Click on the road."; //FIXME
+
+
 //mode printing
 var modePrintingString = new Array();
 modePrintingString["en"] = "Mode: printing. Move or rotate the map extent. Print with the 'Print'-Button.";
