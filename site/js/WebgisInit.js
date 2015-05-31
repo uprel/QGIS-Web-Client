@@ -1703,9 +1703,9 @@ function showSearchPanelResults(searchPanelInstance, features) {
         searchPanelInstance.resultsGrid.collapsible && searchPanelInstance.resultsGrid.expand();
 
         //zoom to the extent from GetFeatureInfo results
-        var bx = searchPanelInstance.store.totalBbox;
-        var bbox = new OpenLayers.Bounds(bx.minx,bx.miny,bx.maxx,bx.maxy);
-        geoExtMap.map.zoomToExtent(bbox,false);
+        //var bx = searchPanelInstance.store.totalBbox;
+        //var bbox = new OpenLayers.Bounds(bx.minx,bx.miny,bx.maxx,bx.maxy);
+        //geoExtMap.map.zoomToExtent(bbox,false);
 
     } else {
         // No features: shouldn't we warn the user?
