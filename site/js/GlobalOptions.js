@@ -33,7 +33,7 @@ var showMetaDataInLegend = true;
 
 // show maptips when mouse is over object, set to false if you just want to click and show results
 // if set to true every mouse position over feature of queriable layers is GetFeatureInfo request on server
-var enableHoverPopup = false;
+var enableHoverPopup = true;
 
 var defaultIdentificationMode = "topMostHit";
 
@@ -43,8 +43,8 @@ var useGeodesicMeasurement = true;
 
 //search box for queries while typing
 //enable to use GeoNames search
-var useGeoNamesSearchBox = false;
-var geoNamesUserName = 'insert your geonames user name';
+var useGeoNamesSearchBox = true;
+var geoNamesUserName = 'uprel';
 //URL for custom search scripts
 var searchBoxQueryURL = null; // "/wsgi/search.wsgi?query=";
 var searchBoxGetGeomURL = null; // "/wsgi/getSearchGeom.wsgi";
@@ -126,19 +126,66 @@ var featureInfoPolygonTolerance = 4;
 // Example formatter, takes the value, the column name and the layer name,
 // normally only the first parameter is used.
 function customURLFormatter(attValue, attName, layerName){
-    return '<a href="http://www.google.com/search?q=' + encodeURI(attValue) + '">' + attValue + '</a>';
+    return '<a target="_blank" href="http://www.google.com/search?q=' + encodeURI(attValue) + '">' + attValue + '</a>';
 }
 
 // Formatters configuration
 var getFeatureInfoCustomFormatters = {
     'Country': { // Layer name
-        'name': customURLFormatter // Can be an array if you need multiple formatters
+        'country': customURLFormatter // Can be an array if you need multiple formatters
     }
 };
 
 //config for QGIS.SearchPanel
 //Number of results: FEATURE_COUNT in WMS request
 var simpleWmsSearchMaxResults = 10;
+
+var popPlacesSearch = {
+	title: "Places",
+	queryLayer: "pop_places",
+	useWmsRequest: true,
+	formItems: [
+	{
+	      xtype: 'textfield',
+	      name: 'name',
+	      fieldLabel: "Name",
+	      allowBlank: true,
+	      blankText: "Please enter a name",
+	      filterOp: "ILIKE"
+    	},{
+              xtype: "textfield",
+              name: "iso_cc",
+              fieldLabel: "Country code",
+              allowBlank: true,
+              blankText: "Enter Country code (2 letters)",
+	      maxLength: 2,
+	      minLength: 2,
+              filterOp: "ILIKE"
+        },{
+
+                    xtype: "combo",
+                    name: "type",
+                    store: [
+                        "National Capital",
+                        "Provincial Capital",
+                        "Large City",
+                        "Town"
+                    ],
+                    fieldLabel: "Type",
+                    emptyText: "",
+                    typeAhead: false,
+                    forceSelection: true,
+                    selectOnFocus: true,
+                    filterOp: "="
+         }],
+	  gridColumns: [
+    		{header: 'Name', dataIndex: 'name', menuDisabled: 'true', renderer: customURLFormatter},
+		{header: 'Country code', dataIndex: 'iso_cc', menuDisabled: 'true'}
+  	  ],
+	  selectionLayer: 'pop_places',
+	  selectionZoom: 12,
+	  doZoomToExtent: false
+};
 
 var simpleWmsSearch = {
   title: "Search continent",
@@ -194,7 +241,7 @@ var urlRewriteSearch = {
 
 //list of configs for QGIS.SearchPanel per map name
 var mapSearchPanelConfigs = {
-  "helloworld": [simpleWmsSearch, urlRewriteSearch]
+  "eu_demo": [popPlacesSearch]
 };
 
 // Needed for helloworld project if rewrite is not active
@@ -216,7 +263,7 @@ var tooltipTemplates = {
 // RightPanel. These additional panels are hidden by default because
 // their expansion and collapse trigger a map resize->reload cycle that
 // can slow down the application.
-var mapSearchPanelOutputRegion = 'popup' ; // Possible values: default,right,bottom,popup
+var mapSearchPanelOutputRegion = 'default' ; // Possible values: default,right,bottom,popup
 
 // Interactive legend. This is based on PHP get_legend.php script.
 // You can define here an alternate URL for this service
@@ -238,8 +285,8 @@ var titleBarText = "GIS-Browser - "; // will be appended with project title
 var headerLogoImg = null; // path to image, set null for no logo
 var headerLogoHeight = 60; // logo image height in pixels
 var headerLogoLink = ""; // logo links to this URL
-var headerTermsOfUseText = null; // set null for no link
-var headerTermsOfUseLink = ""; // URL to terms of use
+var headerTermsOfUseText = " Demo by Level2"; // set null for no link
+var headerTermsOfUseLink = "http://level2.si"; // URL to terms of use
 
 //language switcher in qgiswebclient.html
 var enableLangSwitcher = true;

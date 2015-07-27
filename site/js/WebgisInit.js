@@ -921,7 +921,9 @@ function postLoading() {
 					minChars: 2,
 					loadingText: geonamesLoadingString[lang],
 					emptyText: geonamesEmptyString[lang],
-					username: geoNamesUserName
+					username: geoNamesUserName,
+					zoom: 12,
+					continentCode: 'EU'
 				});
 				var emptySearchFieldButton = new Ext.Button({
 					scale: 'medium',
