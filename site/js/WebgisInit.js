@@ -217,6 +217,8 @@ function loadWMSConfig(topicName) {
 		layerParams: {
 			'TRANSPARENT': 'TRUE'
 		},
+        projectSettings: null,
+        initialVisibleLayers: new Array(),
 		// customize the createNode method to add a checkbox to nodes and the ui provider
 		createNode: function (attr) {
 			attr.checked = false;
@@ -318,7 +320,7 @@ function postLoading() {
 		if (visibleLayers == null) {
 			//in case the visible layers are not provided as URL parameter we read the visibility settings from the
 			//GetProjectSettings response - we need to adapt the drawing order from the project
-			visibleLayers = layersInDrawingOrder(wmsLoader.initialVisibleLayers);
+            visibleLayers = layersInDrawingOrder(wmsLoader.initialVisibleLayers);
 		}
 
 		layerTree.root.firstChild.expand(true, false);
@@ -598,7 +600,7 @@ function postLoading() {
 				styleMap: styleMapHighLightLayer
 			}),
 			exportLayer = new OpenLayers.Layer.Vector("exportLayer", {
-				isBaseLayer: false,
+				isBaseLayer: false
 			})]),
 			map: MapOptions,
 			id: "geoExtMapPanel",
@@ -1578,7 +1580,7 @@ function postLoading() {
 					}, {
 						xtype: 'tbspacer'
 					}, {
-						xtype: 'tbseparator',
+						xtype: 'tbseparator'
 					}, {
 						xtype: 'tbspacer'
 					}, {
@@ -1691,7 +1693,7 @@ function postLoading() {
 					}, {
 						xtype: 'tbspacer'
 					}, {
-						xtype: 'tbseparator',
+						xtype: 'tbseparator'
 					}, {
 						xtype: 'tbspacer'
 					}, {
